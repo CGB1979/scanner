@@ -88,8 +88,12 @@ function actualizarControlesPlaya() {
 
     const modo = obtenerModoNumeracion();
 
-    numeroInicialContainer.classList.add("hidden");
+    // En playas especiales tambien debe mostrarse el numero inicial,
+    // igual que en las playas normales. Este valor indica el carril
+    // desde el que comienza la asignacion.
+    numeroInicialContainer.classList.remove("hidden");
 
+    // En modo "Por fila" se muestra ademas la fila de inicio.
     if (modo === "porFila") {
         filaInicialContainer.classList.remove("hidden");
     } else {
