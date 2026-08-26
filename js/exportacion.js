@@ -376,25 +376,25 @@ async function exportarCSV() {
             {
                 header: "Playa",
                 key: "playa",
-                width: 13
+                width: 15
             },
 
             {
                 header: "Bloque",
                 key: "bloque",
-                width: 13
+                width: 15
             },
 
             {
                 header: "Carril",
                 key: "calle",
-                width: 13
+                width: 15
             },
 
             {
                 header: "Posicion",
                 key: "fila",
-                width: 13
+                width: 15
             },
 
             {
@@ -424,17 +424,15 @@ async function exportarCSV() {
 
         };
 
-        encabezado.fill = {
-
-            type: "pattern",
-
-            pattern: "solid",
-
-            fgColor: {
-                argb: "FF173F6D"
-            }
-
-        };
+        for (let c = 1; c <= 6; c++) {
+    encabezado.getCell(c).fill = {
+        type: "pattern",
+        pattern: "solid",
+        fgColor: {
+            argb: "70AD47"
+        }
+    };
+}
 
         encabezado.alignment = {
 
