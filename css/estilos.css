@@ -104,7 +104,7 @@ button {
 }
 
 .app-header {
-    background: #173f6d;
+    background: #548235;
     color: white;
     padding: 18px 18px 20px;
     text-align: center;
@@ -203,8 +203,8 @@ input {
 
 select:focus,
 input:focus {
-    border-color: #1976b8;
-    box-shadow: 0 0 0 3px rgba(25,118,184,.12);
+    border-color: #70ad47;
+    box-shadow: 0 0 0 3px rgba(112,173,71,.12);
 }
 
 .row {
@@ -248,16 +248,16 @@ input:focus {
 }
 
 .numbering-option input:checked + label {
-    border-color: #1769aa;
-    background: #eaf4fc;
-    color: #174d7b;
-    box-shadow: inset 0 0 0 1px #1769aa;
+    border-color: #70ad47;
+    background: #e2f0d9;
+    color: #548235;
+    box-shadow: inset 0 0 0 1px #70ad47;
 }
 
 .numbering-help {
     margin-top: 9px;
     padding: 10px 12px;
-    background: #f2f6fa;
+    background: #f1f8ed;
     border-radius: 8px;
     color: #5f6b76;
     font-size: 13px;
@@ -269,12 +269,12 @@ input:focus {
 
 .numbering-help.editable-j {
     cursor: pointer;
-    border: 1px dashed #1769aa;
+    border: 1px dashed #70ad47;
 }
 
 .numbering-help.editable-j:hover {
-    background: #eaf4fc;
-    color: #174d7b;
+    background: #e2f0d9;
+    color: #548235;
 }
 
 .start-number-container {
@@ -302,12 +302,12 @@ button:disabled {
 }
 
 .btn-primary {
-    background: #1769aa;
+    background: #70ad47;
     color: white;
 }
 
 .btn-primary:hover {
-    background: #145d96;
+    background: #548235;
 }
 
 .btn-success {
@@ -348,8 +348,8 @@ button:disabled {
     justify-content: space-between;
     gap: 12px;
     padding: 13px 14px;
-    background: #edf5fc;
-    border: 1px solid #dceaf6;
+    background: #f1f8ed;
+    border: 1px solid #c6e0b4;
     border-radius: 10px;
     margin-bottom: 14px;
 }
@@ -366,7 +366,7 @@ button:disabled {
 }
 
 .current-location-value {
-    color: #173f6d;
+    color: #548235;
     font-size: 17px;
     font-weight: 700;
 }
@@ -384,7 +384,7 @@ button:disabled {
 }
 
 .summary-box {
-    background: #edf5fc;
+    background: #f1f8ed;
     border-radius: 10px;
     padding: 15px 10px;
     text-align: center;
@@ -395,7 +395,7 @@ button:disabled {
     font-size: 28px;
     line-height: 1.1;
     font-weight: bold;
-    color: #173f6d;
+    color: #548235;
     margin-bottom: 4px;
 }
 
@@ -419,7 +419,7 @@ button:disabled {
 .vehicle-position {
     font-size: 21px;
     font-weight: bold;
-    color: #173f6d;
+    color: #548235;
 }
 
 .vehicle-chassis {
@@ -750,9 +750,9 @@ button:disabled {
 }
 
 .location-preview {
-    background: #edf5fc;
-    border: 1px solid #dceaf6;
-    color: #173f6d;
+    background: #f1f8ed;
+    border: 1px solid #c6e0b4;
+    color: #548235;
     border-radius: 9px;
     padding: 11px;
     margin-top: 13px;
