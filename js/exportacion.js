@@ -334,415 +334,102 @@ function guardarDatos() {
 async function exportarCSV() {
 
     if (vehiculos.length === 0) {
-
-        alert(
-            "No hay vehiculos registrados para exportar."
-        );
-
+        alert("No hay vehiculos registrados para exportar.");
         return;
     }
 
     try {
-
-        const workbook =
-            new ExcelJS.Workbook();
-
-        /*
-         * =========================================
-         * HOJA PRINCIPAL
-         * =========================================
-         */
-
-        const worksheet =
-            workbook.addWorksheet(
-                "Vehiculos"
-            );
-
-        /*
-         * =========================================
-         * COLUMNAS
-         * SIN CODIGO DE BARRAS
-         * =========================================
-         */
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet("Vehiculos");
 
         worksheet.columns = [
-
-            {
-                header: "Numero de chasis",
-                key: "chasis",
-                width: 25
-            },
-
-            {
-                header: "Playa",
-                key: "playa",
-                width: 10
-            },
-
-            {
-                header: "Bloque",
-                key: "bloque",
-                width: 10
-            },
-
-            {
-                header: "Carril",
-                key: "calle",
-                width: 10
-            },
-
-            {
-                header: "Posicion",
-                key: "fila",
-                width: 10
-            },
-
-            {
-                header: "Ubicacion",
-                key: "ubicacion",
-                width: 18
-            }
-
+            { header: "Playa", key: "playa", width: 10 },
+            { header: "Bloque", key: "bloque", width: 10 },
+            { header: "Carril", key: "carril", width: 12 },
+            { header: "Posicion", key: "posicion", width: 12 },
+            { header: "Chasis", key: "chasis", width: 25 },
+            { header: "Resumen", key: "resumen", width: 22 }
         ];
 
-        /*
-         * =========================================
-         * ENCABEZADO
-         * =========================================
-         */
-
-        const encabezado =
-            worksheet.getRow(1);
-
+        const encabezado = worksheet.getRow(1);
         encabezado.font = {
-
             bold: true,
-
-            color: {
-                argb: "FFFFFFFF"
-            }
-
+            color: { argb: "FFFFFFFF" }
         };
-
         encabezado.fill = {
-
             type: "pattern",
-
             pattern: "solid",
-
-            fgColor: {
-                argb: "FF173F6D"
-            }
-
+            fgColor: { argb: "FF173F6D" }
         };
-
         encabezado.alignment = {
-
             vertical: "middle",
-
             horizontal: "center"
-
         };
-
         encabezado.height = 25;
 
-
-        /*
-         * =========================================
-         * CREAR VEHICULOS
-         * =========================================
-         */
-
-        for (
-            let i = 0;
-            i < vehiculos.length;
-            i++
-        ) {
-
-            const v =
-                vehiculos[i];
-
-            let calle = "";
-
-            let fila = "";
-
-
-            /*
-             * =========================================
-             * RESPETAR LOGICA DE PLAYA J
-             * =========================================
-             */
+        vehiculos.forEach(function(v) {
+            let carril = "";
+            let posicion = "";
 
             if (esPlayaJ(v.playa)) {
-
-                const p =
-                    parsearPosicionJ(
-                        v.posicion
-                    );
-
+                const p = parsearPosicionJ(v.posicion);
                 if (p) {
-
-                    calle =
-                        String(p.calle);
-
-                    fila =
-                        String(p.fila);
-
+                    carril = String(p.calle);
+                    posicion = String(p.fila);
+                } else if (Number.isFinite(Number(v.carril))) {
+                    carril = String(v.carril);
+                    posicion = String(v.posicion || "");
                 }
-
+            } else {
+                carril = String(obtenerCarrilNormalVehiculo(v) || "");
+                posicion = String(obtenerPosicionNormalVehiculo(v) || "");
             }
 
+            const filaExcel = worksheet.addRow({
+                playa: String(v.playa || ""),
+                bloque: String(v.bloque || ""),
+                carril: carril,
+                posicion: posicion,
+                chasis: String(v.chasis || ""),
+                resumen: obtenerResumenVehiculo(v)
+            });
 
-            /*
-             * =========================================
-             * DATOS
-             * =========================================
-             */
-
-            const chasis =
-                String(v.chasis);
-
-            const playa =
-                String(v.playa);
-
-            const bloque =
-                String(v.bloque);
-
-            const ubicacion =
-                String(v.posicion);
-
-
-            /*
-             * =========================================
-             * AGREGAR FILA
-             * =========================================
-             */
-
-            const filaExcel =
-                worksheet.addRow({
-
-                    chasis:
-                        chasis,
-
-                    playa:
-                        playa,
-
-                    bloque:
-                        bloque,
-
-                    calle:
-                        String(calle),
-
-                    fila:
-                        String(fila),
-
-                    ubicacion:
-                        ubicacion
-
-                });
-
-
-            /*
-             * =========================================
-             * TODAS LAS CELDAS COMO TEXTO
-             * =========================================
-             */
-
-            for (
-                let c = 1;
-                c <= 6;
-                c++
-            ) {
-
-                filaExcel
-                    .getCell(c)
-                    .numFmt = "@";
-
+            for (let c = 1; c <= 6; c++) {
+                filaExcel.getCell(c).numFmt = "@";
             }
-
-
-            /*
-             * =========================================
-             * ALINEACION
-             * =========================================
-             */
 
             filaExcel.height = 15;
-
             filaExcel.alignment = {
-
-                vertical:
-                    "middle",
-
-                horizontal:
-                    "center"
-
+                vertical: "middle",
+                horizontal: "center"
             };
-
-        }
-
-
-        /*
-         * =========================================
-         * FILTROS
-         * =========================================
-         */
+        });
 
         worksheet.autoFilter = {
-
-            from:
-                "A1",
-
-            to:
-                "F" +
-                (vehiculos.length + 1)
-
+            from: "A1",
+            to: "F" + (vehiculos.length + 1)
         };
 
+        worksheet.views = [{
+            state: "frozen",
+            ySplit: 1
+        }];
 
-        /*
-         * =========================================
-         * CONGELAR ENCABEZADO
-         * =========================================
-         */
-
-        worksheet.views = [
-
-            {
-
-                state:
-                    "frozen",
-
-                ySplit:
-                    1
-
-            }
-
-        ];
-
-
-        /*
-         * =========================================
-         * GENERAR ARCHIVO XLSX
-         * =========================================
-         */
-
-        const buffer =
-            await workbook.xlsx.writeBuffer();
-
-
-        const blob =
-            new Blob(
-                [buffer],
-                {
-
-                    type:
-                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-
-                }
-            );
-
-
-        const url =
-            URL.createObjectURL(
-                blob
-            );
-
-
-        const enlace =
-            document.createElement(
-                "a"
-            );
-
-
-        enlace.href =
-            url;
-
-
-        enlace.download =
-            "vehiculos_playa.xlsx";
-
-
-        document
-            .body
-            .appendChild(
-                enlace
-            );
-
-
+        const buffer = await workbook.xlsx.writeBuffer();
+        const blob = new Blob([buffer], {
+            type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        });
+        const url = URL.createObjectURL(blob);
+        const enlace = document.createElement("a");
+        enlace.href = url;
+        enlace.download = "vehiculos_playa.xlsx";
+        document.body.appendChild(enlace);
         enlace.click();
-
-
-        document
-            .body
-            .removeChild(
-                enlace
-            );
-
-
-        URL.revokeObjectURL(
-            url
-        );
-
+        document.body.removeChild(enlace);
+        URL.revokeObjectURL(url);
 
     } catch (error) {
-
-        console.error(
-            "Error al generar Excel:",
-            error
-        );
-
-        alert(
-            "No se pudo generar el archivo Excel."
-        );
-
+        console.error("Error al generar Excel:", error);
+        alert("No se pudo generar el archivo Excel.");
     }
-
-}
-
-function escapeHTML(text) {
-
-    return String(text)
-
-        .replace(
-            /&/g,
-            "&amp;"
-        )
-
-        .replace(
-            /</g,
-            "&lt;"
-        )
-
-        .replace(
-            />/g,
-            "&gt;"
-        )
-
-        .replace(
-            /"/g,
-            "&quot;"
-        )
-
-        .replace(
-            /'/g,
-            "&#039;"
-        );
-
-}
-
-function escapeJS(text) {
-
-    return String(text)
-
-        .replace(
-            /\\/g,
-            "\\\\"
-        )
-
-        .replace(
-            /'/g,
-            "\\'"
-        );
-
 }
