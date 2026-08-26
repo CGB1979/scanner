@@ -376,25 +376,25 @@ async function exportarCSV() {
             {
                 header: "Playa",
                 key: "playa",
-                width: 10
+                width: 13
             },
 
             {
                 header: "Bloque",
                 key: "bloque",
-                width: 10
+                width: 13
             },
 
             {
                 header: "Carril",
                 key: "calle",
-                width: 10
+                width: 13
             },
 
             {
                 header: "Posicion",
                 key: "fila",
-                width: 10
+                width: 13
             },
 
             {
