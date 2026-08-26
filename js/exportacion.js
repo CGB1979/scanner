@@ -463,32 +463,28 @@ async function exportarCSV() {
                 vehiculos[i];
 
             let calle = "";
-
             let fila = "";
-
-
-            /*
-             * =========================================
-             * RESPETAR LOGICA DE PLAYA J
-             * =========================================
-             */
+            let ubicacion = "";
 
             if (esPlayaEspecial(v.playa)) {
-
-                const p =
-                    parsearPosicionEspecial(
-                        v.posicion
-                    );
+                const p = parsearPosicionEspecial(v.posicion);
 
                 if (p) {
                     calle = String(p.calle);
                     fila = String(p.fila);
+                    ubicacion = `${v.playa} - ${v.bloque} - ${p.calle} - ${p.fila}`;
+                } else {
+                    ubicacion = `${v.playa} - ${v.bloque} - ${String(v.posicion)}`;
                 }
             } else {
                 const p = obtenerUbicacionNormal(v.posicion);
+
                 if (p) {
                     calle = String(p.carril);
                     fila = String(p.posicion);
+                    ubicacion = `${v.playa} - ${v.bloque} - ${p.carril}`;
+                } else {
+                    ubicacion = `${v.playa} - ${v.bloque} - ${String(v.posicion)}`;
                 }
             }
 
@@ -507,8 +503,6 @@ async function exportarCSV() {
             const bloque =
                 String(v.bloque);
 
-            const ubicacion =
-                String(v.posicion);
 
 
             /*
