@@ -1,7 +1,3 @@
-function esPlayaEspecial(playa) {
-    return ["I", "J"].includes(String(playa).toUpperCase());
-}
-
 function actualizarOpcionesPlaya() {
 
     const esJ = esPlayaEspecial(playaSelect.value);
@@ -775,9 +771,14 @@ function obtenerProximaPosicionEspecial(
 
 function obtenerUbicacionNormal(posicion) {
     const numero = Number(posicion);
-    if (!Number.isFinite(numero) || numero < 1) return null;
-    const inicio = normalizarPrimerNumero(obtenerInicioNumeracion());
+
+    if (!Number.isFinite(numero) || numero < 1) {
+        return null;
+    }
+
+    const inicio = obtenerInicioNumeracion();
     const indice = Math.max(0, Math.floor(numero) - inicio);
+
     return {
         carril: inicio + (Math.floor(indice / 2) * 2),
         posicion: indice % 2 === 0 ? "Adelante" : "Atras"
@@ -786,7 +787,10 @@ function obtenerUbicacionNormal(posicion) {
 
 function formatearUbicacionNormal(posicion) {
     const u = obtenerUbicacionNormal(posicion);
-    return u ? `Carril ${u.carril} - Posicion ${u.posicion}` : String(posicion);
+
+    return u
+        ? `Carril ${u.carril} - Posicion ${u.posicion}`
+        : String(posicion);
 }
 
 function obtenerProximaPosicion(
@@ -795,67 +799,38 @@ function obtenerProximaPosicion(
 ) {
 
     if (esPlayaEspecial(playa)) {
-
         return obtenerProximaPosicionEspecial(
             playa,
             bloque
         );
-
     }
 
-    const registros = vehiculos.filter(function(v) {
+    const inicio = obtenerInicioNumeracion();
 
-        return (
-            v.playa === playa &&
-            v.bloque === bloque
-        );
-
-    });
-
-    let inicio = obtenerInicioNumeracion();
-
-    inicio = normalizarPrimerNumero(inicio);
-
-    if (registros.length === 0) {
-        return inicio;
-    }
-
-    const posiciones = registros
+    const posiciones = vehiculos
+        .filter(function(v) {
+            return (
+                v.playa === playa &&
+                v.bloque === bloque
+            );
+        })
         .map(function(v) {
             return Number(v.posicion);
         })
         .filter(function(numero) {
-            return Number.isFinite(numero);
+            return Number.isFinite(numero) && numero >= inicio;
         });
 
     if (posiciones.length === 0) {
         return inicio;
     }
 
-    const mayor = Math.max(...posiciones);
-
-    let siguiente;
-
-    if (obtenerModoNumeracion() === "continua") {
-
-        siguiente = Math.max(
-            inicio,
-            mayor + 1
-        );
-
-    } else {
-
-        siguiente = Math.max(
-            inicio,
-            mayor + 1
-        );
-
-        siguiente = normalizarPrimerNumero(
-            siguiente
-        );
-
-    }
-
-    return siguiente;
+    /*
+     * En playas normales la posicion interna avanza de a uno:
+     * inicio, inicio+1, inicio+2...
+     * Cada dos posiciones se muestra el mismo carril y el carril
+     * visible avanza solamente con numeros impares: +2.
+     */
+    return Math.max(...posiciones) + 1;
 
 }
