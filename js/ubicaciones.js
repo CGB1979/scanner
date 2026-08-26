@@ -266,21 +266,34 @@ function obtenerProximaPosicionCambio(
             })
         );
 
-    let siguiente = mayor + 1;
+    const modo = obtenerModoNumeracion();
 
-    if (
-        obtenerModoNumeracion() !==
-        "continua"
-    ) {
+    if (modo === "pares" || modo === "impares") {
+        const posicionesDelModo = registros
+            .map(function(v) {
+                return Number(v.posicion);
+            })
+            .filter(function(numero) {
+                return Number.isFinite(numero) && (
+                    modo === "pares"
+                        ? numero % 2 === 0
+                        : numero % 2 !== 0
+                );
+            });
 
-        siguiente =
-            normalizarPrimerNumero(
-                siguiente
+        if (posicionesDelModo.length === 0) {
+            return normalizarPrimerNumero(
+                obtenerInicioNumeracion()
             );
+        }
 
+        return Math.max.apply(
+            null,
+            posicionesDelModo
+        ) + 2;
     }
 
-    return siguiente;
+    return mayor + 1;
 
 }
 
