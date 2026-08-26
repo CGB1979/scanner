@@ -776,12 +776,19 @@ function obtenerUbicacionNormal(posicion) {
         return null;
     }
 
-    const inicio = obtenerInicioNumeracion();
-    const indice = Math.max(0, Math.floor(numero) - inicio);
-
+    /*
+     * En playas normales el carril siempre queda identificado por el
+     * numero impar del par fisico:
+     *   1/2 -> carril 1
+     *   3/4 -> carril 3
+     *   5/6 -> carril 5
+     *
+     * Esto no depende del numero inicial configurado ni del modo de
+     * escaneo. Los impares son "Adelante" y los pares "Atras".
+     */
     return {
-        carril: inicio + (Math.floor(indice / 2) * 2),
-        posicion: indice % 2 === 0 ? "Adelante" : "Atras"
+        carril: numero % 2 === 0 ? numero - 1 : numero,
+        posicion: numero % 2 === 0 ? "Atras" : "Adelante"
     };
 }
 
@@ -822,14 +829,34 @@ function obtenerProximaPosicion(
         });
 
     if (posiciones.length === 0) {
-        return inicio;
+        return normalizarPrimerNumero(inicio);
+    }
+
+    const modo = obtenerModoNumeracion();
+
+    if (modo === "pares" || modo === "impares") {
+        /*
+         * En escaneo por una sola fila cada lectura salta al siguiente
+         * carril fisico, por lo que la numeracion avanza de a 2.
+         * Se consideran solo las posiciones de la misma paridad para
+         * no mezclar un escaneo de adelante con uno de atras.
+         */
+        const posicionesDelModo = posiciones.filter(function(numero) {
+            return modo === "pares"
+                ? numero % 2 === 0
+                : numero % 2 !== 0;
+        });
+
+        if (posicionesDelModo.length === 0) {
+            return normalizarPrimerNumero(inicio);
+        }
+
+        return Math.max(...posicionesDelModo) + 2;
     }
 
     /*
-     * En playas normales la posicion interna avanza de a uno:
-     * inicio, inicio+1, inicio+2...
-     * Cada dos posiciones se muestra el mismo carril y el carril
-     * visible avanza solamente con numeros impares: +2.
+     * Escaneo continuo: se recorren ambas posiciones de cada carril,
+     * por lo que la numeracion avanza de a uno.
      */
     return Math.max(...posiciones) + 1;
 
