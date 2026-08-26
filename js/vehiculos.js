@@ -1,35 +1,29 @@
-function textoProximaUbicacion(playa, ubicacion) {
-
-    if (esPlayaJ(playa)) {
-        return String(ubicacion || "");
-    }
-
-    if (!ubicacion) {
-        return "";
-    }
-
-    return `${ubicacion.carril} - ${ubicacion.posicion}`;
-
-}
-
 function actualizarPantalla() {
 
     const playa = playaSelect.value;
     const bloque = bloqueSelect.value;
 
+    // EDITABLE: formato de la ubicacion que se muestra arriba
     tituloUbicacion.innerText =
         `Playa ${playa} - Bloque ${bloque}`;
 
     const registros = vehiculos.filter(function(v) {
-        return v.playa === playa && v.bloque === bloque;
+
+        return (
+            v.playa === playa &&
+            v.bloque === bloque
+        );
+
     });
 
-    cantidadVehiculos.innerText = registros.length;
+    cantidadVehiculos.innerText =
+        registros.length;
 
-    proximaPosicion.innerText = textoProximaUbicacion(
-        playa,
-        obtenerProximaPosicion(playa, bloque)
-    );
+    proximaPosicion.innerText =
+        obtenerProximaPosicion(
+            playa,
+            bloque
+        );
 
     mostrarVehiculos();
     actualizarAyudaNumeracion();
@@ -43,46 +37,71 @@ function mostrarVehiculos() {
 
     const registros = vehiculos
         .filter(function(v) {
-            return v.playa === playa && v.bloque === bloque;
+
+            return (
+                v.playa === playa &&
+                v.bloque === bloque
+            );
+
         })
         .sort(function(a, b) {
 
             if (esPlayaJ(playa)) {
 
-                const pa = parsearPosicionJ(a.posicion);
-                const pb = parsearPosicionJ(b.posicion);
+                const pa = parsearPosicionJ(
+                    a.posicion
+                );
 
-                if (!pa && !pb) return 0;
-                if (!pa) return 1;
-                if (!pb) return -1;
+                const pb = parsearPosicionJ(
+                    b.posicion
+                );
 
-                if (pa.calle !== pb.calle) {
-                    return pa.calle - pb.calle;
+                if (!pa && !pb) {
+                    return 0;
                 }
 
-                return pa.fila - pb.fila;
+                if (!pa) {
+                    return 1;
+                }
+
+                if (!pb) {
+                    return -1;
+                }
+
+                if (pa.calle !== pb.calle) {
+
+                    return (
+                        pa.calle -
+                        pb.calle
+                    );
+
+                }
+
+                return (
+                    pa.fila -
+                    pb.fila
+                );
+
             }
 
-            const carrilA = obtenerCarrilNormalVehiculo(a) || 0;
-            const carrilB = obtenerCarrilNormalVehiculo(b) || 0;
+            return (
+                Number(a.posicion) -
+                Number(b.posicion)
+            );
 
-            if (carrilA !== carrilB) {
-                return carrilA - carrilB;
-            }
-
-            const ordenA = obtenerPosicionNormalVehiculo(a) === "Adelante" ? 1 : 2;
-            const ordenB = obtenerPosicionNormalVehiculo(b) === "Adelante" ? 1 : 2;
-
-            return ordenA - ordenB;
         });
 
     if (registros.length === 0) {
+
+        // EDITABLE: mensaje cuando no hay vehiculos
         listaVehiculos.innerHTML = `
             <div class="empty">
                 No hay vehiculos asignados en esta calle.
             </div>
         `;
+
         return;
+
     }
 
     listaVehiculos.innerHTML = "";
@@ -90,57 +109,96 @@ function mostrarVehiculos() {
     registros.forEach(function(v) {
 
         const div = document.createElement("div");
+
         div.className = "vehicle";
 
-        let ubicacionTexto = "";
-        let posicionTexto = "";
+        let etiquetaUbicacion = "";
 
         if (esPlayaJ(v.playa)) {
 
-            const p = parsearPosicionJ(v.posicion);
+            const p = parsearPosicionJ(
+                v.posicion
+            );
 
             if (p) {
-                ubicacionTexto = `Playa ${v.playa} - Bloque ${v.bloque} - Carril ${p.calle} - Posicion ${p.fila}`;
-                posicionTexto = `${p.calle}-${p.fila}`;
+
+                // EDITABLE: textos que describen la ubicacion de vehiculos
+                etiquetaUbicacion = `
+                    <div class="vehicle-info">
+                        Playa ${escapeHTML(v.playa)}
+                        -
+                        Bloque ${escapeHTML(v.bloque)}
+                        -
+                        Carril ${escapeHTML(p.calle)}
+                        -
+                        Posicion ${escapeHTML(p.fila)}
+                    </div>
+                `;
+
+            } else {
+
+                // EDITABLE: textos que describen la ubicacion de vehiculos
+                etiquetaUbicacion = `
+                    <div class="vehicle-info">
+                        Playa ${escapeHTML(v.playa)}
+                        -
+                        Bloque ${escapeHTML(v.bloque)}
+                    </div>
+                `;
+
             }
 
         } else {
 
-            const carril = obtenerCarrilNormalVehiculo(v);
-            const posicion = obtenerPosicionNormalVehiculo(v);
+            // EDITABLE: textos que describen la ubicacion de vehiculos
+            etiquetaUbicacion = `
+                <div class="vehicle-info">
+                    Playa ${escapeHTML(v.playa)}
+                    -
+                    Bloque ${escapeHTML(v.bloque)}
+                </div>
+            `;
 
-            ubicacionTexto = `Playa ${v.playa} - Bloque ${v.bloque} - Carril ${carril} - Posición ${posicion}`;
-            posicionTexto = `Carril ${carril} - ${posicion}`;
         }
 
         div.innerHTML = `
+
             <div class="vehicle-position">
-                ${escapeHTML(posicionTexto)}
+
+                <!-- EDITABLE: texto antes de la posicion -->
+                Ubicacion ${escapeHTML(v.posicion)}
+
             </div>
 
             <div class="vehicle-chassis">
                 ${escapeHTML(v.chasis)}
             </div>
 
-            <div class="vehicle-info">
-                ${escapeHTML(ubicacionTexto)}
-            </div>
+            ${etiquetaUbicacion}
 
             <div class="vehicle-actions">
+
+                <!-- EDITABLE: texto del boton -->
                 <button
                     class="btn-warning"
                     onclick="reasignarDesdeLista('${escapeJS(v.chasis)}')">
                     Cambiar ubicacion
                 </button>
 
+                <!-- EDITABLE: texto del boton -->
                 <button
                     class="btn-danger"
                     onclick="eliminarVehiculo('${escapeJS(v.chasis)}')">
                     Eliminar
                 </button>
+
             </div>
         `;
 
         listaVehiculos.appendChild(div);
+
     });
+
 }
+
+async
