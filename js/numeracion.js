@@ -434,11 +434,13 @@ function actualizarAyudaNumeracion() {
 
     const inicio = obtenerInicioNumeracion();
 
-    if (modo === "continua") {
+    if (!esPlayaJ(playaSelect.value)) {
 
-        // EDITABLE: texto de ayuda para numeracion continua
+        const primero = normalizarCarrilNormal(inicio);
+
+        // En playas normales cada carril tiene 2 vehiculos: adelante y atras.
         numberingHelp.innerText =
-            `Se asignara ${inicio}, ${inicio + 1}, ${inicio + 2}, ${inicio + 3}...`;
+            `Se asignara Carril ${primero} (Adelante y Atrás), luego Carril ${primero + 2}, ${primero + 4}, ${primero + 6}...`;
 
         return;
 
@@ -773,21 +775,130 @@ function obtenerProximaPosicionJ(
 
 }
 
-function obtenerProximaPosicion(
-    playa,
-    bloque
-) {
+function normalizarCarrilNormal(numero) {
 
-    if (esPlayaJ(playa)) {
+    numero = Number(numero);
 
-        return obtenerProximaPosicionJ(
-            playa,
-            bloque
-        );
+    if (!Number.isFinite(numero) || numero < 1) {
+        numero = 1;
+    }
+
+    numero = Math.floor(numero);
+
+    if (numero % 2 === 0) {
+        numero++;
+    }
+
+    return numero;
+
+}
+
+function obtenerCarrilNormalVehiculo(v) {
+
+    if (!v) {
+        return null;
+    }
+
+    if (Number.isFinite(Number(v.carril))) {
+        return normalizarCarrilNormal(v.carril);
+    }
+
+    // Compatibilidad con registros antiguos: 163 = adelante, 164 = atras del carril 163.
+    const legacy = Number(v.posicion);
+
+    if (!Number.isFinite(legacy) || legacy < 1) {
+        return null;
+    }
+
+    return legacy % 2 === 0
+        ? legacy - 1
+        : legacy;
+
+}
+
+function obtenerPosicionNormalVehiculo(v) {
+
+    if (!v) {
+        return null;
+    }
+
+    const texto = String(v.posicion || "")
+        .trim()
+        .toLowerCase();
+
+    if (texto === "adelante") {
+        return "Adelante";
+    }
+
+    if (texto === "atras" || texto === "atrás") {
+        return "Atrás";
+    }
+
+    // Compatibilidad con registros antiguos.
+    const legacy = Number(v.posicion);
+
+    if (!Number.isFinite(legacy)) {
+        return null;
+    }
+
+    return legacy % 2 === 0
+        ? "Atrás"
+        : "Adelante";
+
+}
+
+function obtenerResumenVehiculo(v) {
+
+    if (!v) {
+        return "";
+    }
+
+    if (esPlayaJ(v.playa)) {
+
+        const p = parsearPosicionJ(v.posicion);
+
+        if (p) {
+            return `${v.playa} - ${v.bloque} - ${p.calle} - ${p.fila}`;
+        }
+
+        if (Number.isFinite(Number(v.carril)) && v.posicion !== undefined) {
+            return `${v.playa} - ${v.bloque} - ${v.carril} - ${v.posicion}`;
+        }
+
+        return `${v.playa} - ${v.bloque}`;
 
     }
 
+    const carril = obtenerCarrilNormalVehiculo(v);
+
+    return carril === null
+        ? `${v.playa} - ${v.bloque}`
+        : `${v.playa} - ${v.bloque} - ${carril}`;
+
+}
+
+function obtenerProximaUbicacionNormal(
+    playa,
+    bloque,
+    excluirVehiculo
+) {
+
+    const inicio = normalizarCarrilNormal(
+        obtenerInicioNumeracion()
+    );
+
     const registros = vehiculos.filter(function(v) {
+
+        if (esPlayaJ(v.playa)) {
+            return false;
+        }
+
+        if (
+            excluirVehiculo &&
+            v.id === excluirVehiculo.id
+        ) {
+            return false;
+        }
 
         return (
             v.playa === playa &&
@@ -796,50 +907,70 @@ function obtenerProximaPosicion(
 
     });
 
-    let inicio = obtenerInicioNumeracion();
-
-    inicio = normalizarPrimerNumero(inicio);
-
     if (registros.length === 0) {
-        return inicio;
+        return {
+            carril: inicio,
+            posicion: "Adelante"
+        };
     }
 
-    const posiciones = registros
-        .map(function(v) {
-            return Number(v.posicion);
-        })
-        .filter(function(numero) {
-            return Number.isFinite(numero);
+    const carriles = registros
+        .map(obtenerCarrilNormalVehiculo)
+        .filter(function(carril) {
+            return carril !== null && carril >= inicio;
         });
 
-    if (posiciones.length === 0) {
-        return inicio;
+    if (carriles.length === 0) {
+        return {
+            carril: inicio,
+            posicion: "Adelante"
+        };
     }
 
-    const mayor = Math.max(...posiciones);
+    const ultimoCarril = Math.max(...carriles);
 
-    let siguiente;
+    const posicionesOcupadas = registros
+        .filter(function(v) {
+            return obtenerCarrilNormalVehiculo(v) === ultimoCarril;
+        })
+        .map(obtenerPosicionNormalVehiculo);
 
-    if (obtenerModoNumeracion() === "continua") {
-
-        siguiente = Math.max(
-            inicio,
-            mayor + 1
-        );
-
-    } else {
-
-        siguiente = Math.max(
-            inicio,
-            mayor + 1
-        );
-
-        siguiente = normalizarPrimerNumero(
-            siguiente
-        );
-
+    if (!posicionesOcupadas.includes("Adelante")) {
+        return {
+            carril: ultimoCarril,
+            posicion: "Adelante"
+        };
     }
 
-    return siguiente;
+    if (!posicionesOcupadas.includes("Atrás")) {
+        return {
+            carril: ultimoCarril,
+            posicion: "Atrás"
+        };
+    }
+
+    return {
+        carril: ultimoCarril + 2,
+        posicion: "Adelante"
+    };
+
+}
+
+function obtenerProximaPosicion(
+    playa,
+    bloque
+) {
+
+    if (esPlayaJ(playa)) {
+        return obtenerProximaPosicionJ(
+            playa,
+            bloque
+        );
+    }
+
+    return obtenerProximaUbicacionNormal(
+        playa,
+        bloque
+    );
 
 }
