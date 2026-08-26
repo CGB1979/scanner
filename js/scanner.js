@@ -369,21 +369,18 @@ reproducirSonidoNuevo();
         // EDITABLE: textos de informacion del vehiculo detectado
         infoUbicacion = `
 
-            <strong>Carril:</strong>
+            <strong>Bloque:</strong>
             ${escapeHTML(ubicacion.bloque)}
 
             <br>
 
-            <strong>Ubicacion:</strong>
+            <strong>Carril:</strong>
+            ${escapeHTML(obtenerUbicacionNormal(posicion).carril)}
 
-            <span
-                style="
-                    font-size:22px;
-                    font-weight:bold;
-                    margin-left:5px;
-                ">
-                ${escapeHTML(posicion)}
-            </span>
+            <br>
+
+            <strong>Posicion:</strong>
+            ${escapeHTML(obtenerUbicacionNormal(posicion).posicion)}
 
         `;
 

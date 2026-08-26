@@ -19,11 +19,10 @@ function actualizarPantalla() {
     cantidadVehiculos.innerText =
         registros.length;
 
-    proximaPosicion.innerText =
-        obtenerProximaPosicion(
-            playa,
-            bloque
-        );
+    const siguiente = obtenerProximaPosicion(playa, bloque);
+    proximaPosicion.innerText = esPlayaEspecial(playa)
+        ? siguiente
+        : formatearUbicacionNormal(siguiente);
 
     mostrarVehiculos();
     actualizarAyudaNumeracion();

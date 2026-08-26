@@ -773,6 +773,22 @@ function obtenerProximaPosicionEspecial(
 
 }
 
+function obtenerUbicacionNormal(posicion) {
+    const numero = Number(posicion);
+    if (!Number.isFinite(numero) || numero < 1) return null;
+    const inicio = normalizarPrimerNumero(obtenerInicioNumeracion());
+    const indice = Math.max(0, Math.floor(numero) - inicio);
+    return {
+        carril: inicio + (Math.floor(indice / 2) * 2),
+        posicion: indice % 2 === 0 ? "Adelante" : "Atras"
+    };
+}
+
+function formatearUbicacionNormal(posicion) {
+    const u = obtenerUbicacionNormal(posicion);
+    return u ? `Carril ${u.carril} - Posicion ${u.posicion}` : String(posicion);
+}
+
 function obtenerProximaPosicion(
     playa,
     bloque

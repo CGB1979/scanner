@@ -481,17 +481,16 @@ async function exportarCSV() {
                     );
 
                 if (p) {
-
-                    calle =
-                        String(p.calle);
-
-                    fila =
-                        String(p.fila);
-
+                    calle = String(p.calle);
+                    fila = String(p.fila);
                 }
-
+            } else {
+                const p = obtenerUbicacionNormal(v.posicion);
+                if (p) {
+                    calle = String(p.carril);
+                    fila = String(p.posicion);
+                }
             }
-
 
             /*
              * =========================================
