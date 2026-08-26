@@ -251,7 +251,7 @@ function confirmarBorrarTodo() {
     if (vehiculos.length === 0) {
 
         // EDITABLE: mensaje cuando no hay registros
-        alert(
+        mostrarAlerta(
             "No hay registros para borrar."
         );
 
@@ -335,7 +335,7 @@ async function exportarCSV() {
 
     if (vehiculos.length === 0) {
 
-        alert(
+        mostrarAlerta(
             "No hay vehiculos registrados para exportar."
         );
 
@@ -683,7 +683,7 @@ async function exportarCSV() {
             error
         );
 
-        alert(
+        mostrarAlerta(
             "No se pudo generar el archivo Excel."
         );
 

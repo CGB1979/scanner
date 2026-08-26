@@ -596,7 +596,7 @@ function confirmarCambioUbicacion() {
         ) {
 
             // EDITABLE: mensaje de error
-            alert(
+            mostrarAlerta(
                 "Ingrese una calle valida."
             );
 
@@ -611,7 +611,7 @@ function confirmarCambioUbicacion() {
         ) {
 
             // EDITABLE: mensaje de error
-            alert(
+            mostrarAlerta(
                 "Seleccione una fila valida entre 1 y 5."
             );
 
@@ -632,7 +632,7 @@ function confirmarCambioUbicacion() {
             
             reproducirSonidoError();   
             // EDITABLE: mensaje de ubicacion ocupada
-            alert(
+            mostrarAlerta(
                 `La ubicacion ${calle}-${fila} \nya esta ocupada en Playa ${playa} - Bloque ${bloque}.`
             );
 
@@ -740,7 +740,7 @@ function confirmarCambioUbicacion() {
         } else {
 
             // EDITABLE: mensaje despues de modificar ubicacion
-            alert(
+            mostrarAlerta(
                 `Vehiculo ${anterior.chasis} cambiado a \nPlaya ${playa} - Bloque ${bloque} - Carril ${calle} - Posicion ${fila}.`
             );
 
@@ -767,7 +767,7 @@ function confirmarCambioUbicacion() {
     ) {
 
         // EDITABLE: mensaje de error
-        alert(
+        mostrarAlerta(
             "Ingrese un numero de posicion valido."
         );
 
@@ -797,7 +797,7 @@ function confirmarCambioUbicacion() {
 
         reproducirSonidoError();
         // EDITABLE: mensaje de ubicacion ocupada
-        alert(
+        mostrarAlerta(
             `La posicion ${numero} \nya esta ocupada en Playa ${playa} - Bloque ${bloque}.`
         );
 
@@ -892,7 +892,7 @@ function confirmarCambioUbicacion() {
     } else {
 
         // EDITABLE: mensaje despues de modificar ubicacion
-        alert(
+        mostrarAlerta(
             `Vehiculo ${anterior.chasis} cambiado a \nPlaya ${playa} - Bloque ${bloque} - Ubicacion ${numero}.`
         );
 
@@ -1048,7 +1048,7 @@ function confirmarIngresoManual() {
 
     if (!chasis) {
 
-        alert(
+        mostrarAlerta(
             "Ingrese un numero de chasis."
         );
 

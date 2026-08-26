@@ -628,7 +628,7 @@ function guardarNuevoVehiculo() {
 
             reproducirSonidoError(); 
             // EDITABLE: mensaje de ubicacion ocupada
-            alert(
+            mostrarAlerta(
                 `La ubicacion ${nuevo.posicion} ya esta ocupada.`
             );
 

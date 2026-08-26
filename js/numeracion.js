@@ -298,7 +298,7 @@ function ajustarNumeroInicialPorModo() {
 
 }
 
-function editarInicioPlayaEspecial() {
+async function editarInicioPlayaEspecial() {
 
     if (!esPlayaEspecial(playaSelect.value)) {
         return;
@@ -307,7 +307,7 @@ function editarInicioPlayaEspecial() {
     const actual = obtenerInicioNumeracionEspecial();
 
     // EDITABLE: texto que aparece en la ventana para cambiar el inicio
-    const respuesta = prompt(
+    const respuesta = await mostrarPrompt(
         "Ingrese el numero de Carril desde el que desea comenzar la asignacion:",
         String(actual)
     );
@@ -324,7 +324,7 @@ function editarInicioPlayaEspecial() {
     if (!Number.isFinite(numero) || numero < 1) {
 
         // EDITABLE: mensaje de error
-        alert("Ingrese un numero valido mayor o igual a 1.");
+        await mostrarAlerta("Ingrese un numero valido mayor o igual a 1.");
 
         return;
 
