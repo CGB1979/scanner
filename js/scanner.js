@@ -1,123 +1,99 @@
 async function abrirScanner() {
+    const modal = document.getElementById("scannerModal");
+    const status = document.getElementById("scannerStatus");
 
-    guardarConfiguracionNumeracion();
-
-    document
-        .getElementById("scannerModal")
-        .classList
-        .remove("hidden");
-
-    document
-        .getElementById("scannerPlaya")
-        .innerText = playaSelect.value;
-
-    document
-        .getElementById("scannerBloque")
-        .innerText = bloqueSelect.value;
-
-    actualizarPosicionScanner();
-
-    document
-        .getElementById("scanResult")
-        .classList
-        .add("hidden");
-
-    bloqueandoLectura = false;
-    ultimoCodigo = null;
-    scannerActivo = true;
-
-    if (scanner) {
-
-        try {
-            await scanner.stop();
-        } catch(e) {}
-
-        try {
-            scanner.clear();
-        } catch(e) {}
-
+    if (!modal) {
+        console.error("No se encontro scannerModal.");
+        alert("No se pudo abrir el escaner: falta el contenedor del escaner.");
+        return;
     }
 
-    scanner = new Html5Qrcode("reader");
+    // Mostrar primero el modal para que el boton siempre tenga respuesta visual.
+    modal.classList.remove("hidden");
 
     try {
+        if (typeof guardarConfiguracionNumeracion === "function") {
+            guardarConfiguracionNumeracion();
+        }
+
+        const playaEl = document.getElementById("scannerPlaya");
+        const bloqueEl = document.getElementById("scannerBloque");
+
+        if (playaEl && playaSelect) playaEl.innerText = playaSelect.value;
+        if (bloqueEl && bloqueSelect) bloqueEl.innerText = bloqueSelect.value;
+
+        if (typeof actualizarPosicionScanner === "function") {
+            actualizarPosicionScanner();
+        }
+
+        const scanResult = document.getElementById("scanResult");
+        if (scanResult) scanResult.classList.add("hidden");
+
+        bloqueandoLectura = false;
+        ultimoCodigo = null;
+        scannerActivo = true;
+
+        if (status) {
+            status.innerText = "Iniciando camara...";
+        }
+
+        if (scanner) {
+            try { await scanner.stop(); } catch (e) {}
+            try { scanner.clear(); } catch (e) {}
+            scanner = null;
+        }
+
+        if (typeof Html5Qrcode === "undefined") {
+            throw new Error("La biblioteca html5-qrcode no se cargo.");
+        }
+
+        scanner = new Html5Qrcode("reader");
+
+        const config = {
+            fps: 10,
+            qrbox: function(viewfinderWidth, viewfinderHeight) {
+                return {
+                    width: Math.floor(viewfinderWidth * 0.92),
+                    height: Math.min(140, Math.floor(viewfinderHeight * 0.45))
+                };
+            }
+        };
+
+        if (typeof Html5QrcodeSupportedFormats !== "undefined") {
+            config.formatsToSupport = [
+                Html5QrcodeSupportedFormats.CODE_128,
+                Html5QrcodeSupportedFormats.CODE_39,
+                Html5QrcodeSupportedFormats.CODE_93,
+                Html5QrcodeSupportedFormats.CODABAR,
+                Html5QrcodeSupportedFormats.EAN_13,
+                Html5QrcodeSupportedFormats.EAN_8,
+                Html5QrcodeSupportedFormats.UPC_A,
+                Html5QrcodeSupportedFormats.UPC_E,
+                Html5QrcodeSupportedFormats.ITF
+            ];
+        }
 
         await scanner.start(
-
-            {
-                facingMode: "environment"
-            },
-
-            {
-
-                fps: 10,
-
-                qrbox: function(
-                    viewfinderWidth,
-                    viewfinderHeight
-                ) {
-
-                    const width =
-                        Math.floor(
-                            viewfinderWidth * 0.92
-                        );
-
-                    const height =
-                        Math.min(
-                            140,
-                            Math.floor(
-                                viewfinderHeight * 0.45
-                            )
-                        );
-
-                    return {
-                        width: width,
-                        height: height
-                    };
-
-                },
-
-                formatsToSupport: [
-
-                    Html5QrcodeSupportedFormats.CODE_128,
-                    Html5QrcodeSupportedFormats.CODE_39,
-                    Html5QrcodeSupportedFormats.CODE_93,
-                    Html5QrcodeSupportedFormats.CODABAR,
-                    Html5QrcodeSupportedFormats.EAN_13,
-                    Html5QrcodeSupportedFormats.EAN_8,
-                    Html5QrcodeSupportedFormats.UPC_A,
-                    Html5QrcodeSupportedFormats.UPC_E,
-                    Html5QrcodeSupportedFormats.ITF
-
-                ]
-
-            },
-
+            { facingMode: "environment" },
+            config,
             codigoDetectado,
-
-            function(error) {}
-
+            function() {}
         );
 
-        // EDITABLE: mensaje que aparece cuando la camara esta funcionando
-        document
-            .getElementById("scannerStatus")
-            .innerText =
-            "Apunte el codigo dentro del recuadro";
+        if (status) {
+            status.innerText = "Apunte el codigo dentro del recuadro";
+        }
 
-    } catch(error) {
-
-        console.error(error);
-
-        // EDITABLE: mensaje cuando no se puede acceder a la camara
-        document
-            .getElementById("scannerStatus")
-            .innerText =
-            "No se pudo acceder a la camara. Verifique los permisos.";
-
+    } catch (error) {
+        console.error("Error al abrir el scanner:", error);
+        if (status) {
+            status.innerText = "No se pudo iniciar la camara. Verifique los permisos y que la pagina este en HTTPS.";
+        }
     }
-
 }
+
+// Compatibilidad con botones que todavia usen onclick="abrirScanner()".
+window.abrirScanner = abrirScanner;
 
 /* ================================
    SONIDOS DEL ESCANER
@@ -280,158 +256,78 @@ function codigoDetectado(decodedText) {
 function procesarCodigo(chasis) {
 
     const encontrado = vehiculos.find(function(v) {
-
-        return (
-            String(v.chasis).toLowerCase() ===
-            String(chasis).toLowerCase()
-        );
-
+        return String(v.chasis).toLowerCase() === String(chasis).toLowerCase();
     });
 
-   if (encontrado) {
+    if (encontrado) {
+        reproducirSonidoError();
+        mostrarVehiculoExistente(encontrado);
+        return;
+    }
 
-    reproducirSonidoError();
+    reproducirSonidoNuevo();
 
-    mostrarVehiculoExistente(encontrado);
-
-    return;
-}
-reproducirSonidoNuevo();
-
-    const ubicacion =
-        obtenerUbicacionSeleccionada();
-
-    const posicion =
-        obtenerProximaPosicion(
-            ubicacion.playa,
-            ubicacion.bloque
-        );
+    const ubicacion = obtenerUbicacionSeleccionada();
+    const proxima = obtenerProximaPosicion(
+        ubicacion.playa,
+        ubicacion.bloque
+    );
 
     resultadoPendiente = {
-
         tipo: "nuevo",
         chasis: chasis,
         playa: ubicacion.playa,
-        bloque: ubicacion.bloque,
-        posicion: posicion
-
+        bloque: ubicacion.bloque
     };
-
-    // EDITABLE: titulo del resultado del escaneo
-    document
-        .getElementById("scanTitulo")
-        .innerText =
-        "Vehiculo detectado";
 
     let infoUbicacion = "";
 
     if (esPlayaJ(ubicacion.playa)) {
 
-        const p = parsearPosicionJ(posicion);
+        resultadoPendiente.posicion = String(proxima);
+
+        const p = parsearPosicionJ(proxima);
 
         if (p) {
-
-            // EDITABLE: textos de informacion del vehiculo detectado
             infoUbicacion = `
-
-                <strong>Bloque:</strong>
-                ${escapeHTML(ubicacion.bloque)}
-
-                <br>
-
-                <strong>Carril:</strong>
-                ${escapeHTML(p.calle)}
-
-                <br>
-
-                <strong>Posicion:</strong>
-                ${escapeHTML(p.fila)}
-
-                <br>
-
+                <strong>Bloque:</strong> ${escapeHTML(ubicacion.bloque)}<br>
+                <strong>Carril:</strong> ${escapeHTML(p.calle)}<br>
+                <strong>Posicion:</strong> ${escapeHTML(p.fila)}<br>
                 <strong>Ubicacion:</strong>
-
-                <span
-                    style="
-                        font-size:22px;
-                        font-weight:bold;
-                        margin-left:5px;
-                    ">
-                    ${escapeHTML(posicion)}
+                <span style="font-size:22px;font-weight:bold;margin-left:5px;">
+                    ${escapeHTML(proxima)}
                 </span>
-
             `;
-
         }
 
     } else {
 
-        // EDITABLE: textos de informacion del vehiculo detectado
+        resultadoPendiente.carril = proxima.carril;
+        resultadoPendiente.posicion = proxima.posicion;
+
         infoUbicacion = `
-
-            <strong>Carril:</strong>
-            ${escapeHTML(ubicacion.bloque)}
-
-            <br>
-
-            <strong>Ubicacion:</strong>
-
-            <span
-                style="
-                    font-size:22px;
-                    font-weight:bold;
-                    margin-left:5px;
-                ">
-                ${escapeHTML(posicion)}
-            </span>
-
+            <strong>Bloque:</strong> ${escapeHTML(ubicacion.bloque)}<br>
+            <strong>Carril:</strong> ${escapeHTML(proxima.carril)}<br>
+            <strong>Posición:</strong> ${escapeHTML(proxima.posicion)}
         `;
-
     }
 
-    document
-        .getElementById("scanInfo")
-        .innerHTML = `
+    document.getElementById("scanTitulo").innerText = "Vehiculo detectado";
 
-        <!-- EDITABLE: etiqueta del chasis -->
+    document.getElementById("scanInfo").innerHTML = `
         <strong>Chasis:</strong><br>
-
         ${escapeHTML(chasis)}
-
         <br><br>
-
-        <!-- EDITABLE: etiqueta de playa -->
-        <strong>Playa:</strong>
-        ${escapeHTML(ubicacion.playa)}
-
+        <strong>Playa:</strong> ${escapeHTML(ubicacion.playa)}
         <br>
-
         ${infoUbicacion}
-
     `;
 
-    // EDITABLE: texto del boton
-    document
-        .getElementById("btnAceptarScan")
-        .innerText =
-        "Aceptar y guardar";
-
-    document
-        .getElementById("btnAceptarScan")
-        .className =
-        "btn-success";
-
-    document
-        .getElementById("scanResult")
-        .classList
-        .remove("hidden");
-
-    // EDITABLE: mensaje de confirmacion del escaneo
-    document
-        .getElementById("scannerStatus")
-        .innerText =
+    document.getElementById("btnAceptarScan").innerText = "Aceptar y guardar";
+    document.getElementById("btnAceptarScan").className = "btn-success";
+    document.getElementById("scanResult").classList.remove("hidden");
+    document.getElementById("scannerStatus").innerText =
         "Verifique los datos y presione Aceptar.";
-
 }
 
 function mostrarVehiculoExistente(v) {
@@ -441,127 +337,37 @@ function mostrarVehiculoExistente(v) {
         vehiculo: v
     };
 
-    // EDITABLE: titulo cuando el vehiculo ya existe
-    document
-        .getElementById("scanTitulo")
-        .innerText =
-        "Vehiculo ya registrado";
+    document.getElementById("scanTitulo").innerText = "Vehiculo ya registrado";
 
     let ubicacionActual = "";
 
     if (esPlayaJ(v.playa)) {
-
-        const p = parsearPosicionJ(
-            v.posicion
-        );
-
+        const p = parsearPosicionJ(v.posicion);
         if (p) {
-
-            // EDITABLE: informacion de ubicacion existente
-            ubicacionActual = `
-
-                Playa ${escapeHTML(v.playa)}
-                -
-                Bloque ${escapeHTML(v.bloque)}
-
-                <br>
-
-                Carril ${escapeHTML(p.calle)}
-                -
-                Posicion ${escapeHTML(p.fila)}
-
-                <br>
-
-                <strong>
-                    Ubicacion ${escapeHTML(v.posicion)}
-                </strong>
-
-            `;
-
-        } else {
-
-            // EDITABLE: informacion de ubicacion existente
-            ubicacionActual = `
-
-                Playa ${escapeHTML(v.playa)}
-                -
-                Bloque ${escapeHTML(v.bloque)}
-                -
-                <strong>
-                    Ubicacion ${escapeHTML(v.posicion)}
-                </strong>
-
-            `;
-
+            ubicacionActual = `Playa ${escapeHTML(v.playa)} - Bloque ${escapeHTML(v.bloque)}<br>Carril ${escapeHTML(p.calle)} - Posicion ${escapeHTML(p.fila)}`;
         }
-
     } else {
-
-        // EDITABLE: informacion de ubicacion existente
-        ubicacionActual = `
-
-            Playa ${escapeHTML(v.playa)}
-            -
-            Bloque ${escapeHTML(v.bloque)}
-            -
-
-            <strong>
-                Ubicacion ${escapeHTML(v.posicion)}
-            </strong>
-
-        `;
-
+        const carril = obtenerCarrilNormalVehiculo(v);
+        const posicion = obtenerPosicionNormalVehiculo(v);
+        ubicacionActual = `Playa ${escapeHTML(v.playa)} - Bloque ${escapeHTML(v.bloque)}<br>Carril ${escapeHTML(carril)} - Posición ${escapeHTML(posicion)}`;
     }
 
-    document
-        .getElementById("scanInfo")
-        .innerHTML = `
-
+    document.getElementById("scanInfo").innerHTML = `
         <div class="warning">
-
-            <!-- EDITABLE: etiqueta -->
             <strong>Chasis:</strong><br>
-
             ${escapeHTML(v.chasis)}
-
             <br><br>
-
-            <!-- EDITABLE: etiqueta -->
             <strong>Ubicacion actual:</strong><br>
-
             ${ubicacionActual}
-
         </div>
-
-        <!-- EDITABLE: pregunta al usuario -->
-        <strong>
-            &iquest;Desea cambiar la ubicacion?
-        </strong>
-
+        <strong>¿Desea cambiar la ubicacion?</strong>
     `;
 
-    // EDITABLE: texto del boton
-    document
-        .getElementById("btnAceptarScan")
-        .innerText =
-        "Cambiar ubicacion";
-
-    document
-        .getElementById("btnAceptarScan")
-        .className =
-        "btn-warning";
-
-    document
-        .getElementById("scanResult")
-        .classList
-        .remove("hidden");
-
-    // EDITABLE: mensaje de estado
-    document
-        .getElementById("scannerStatus")
-        .innerText =
+    document.getElementById("btnAceptarScan").innerText = "Cambiar ubicacion";
+    document.getElementById("btnAceptarScan").className = "btn-warning";
+    document.getElementById("scanResult").classList.remove("hidden");
+    document.getElementById("scannerStatus").innerText =
         "Puede modificar playa, bloque y ubicacion.";
-
 }
 
 function aceptarScan() {
@@ -594,65 +400,38 @@ function guardarNuevoVehiculo() {
     const r = resultadoPendiente;
 
     const nuevo = {
-
         id: Date.now(),
-
         chasis: r.chasis,
-
         playa: r.playa,
-
         bloque: r.bloque,
-
-        posicion:
-            esPlayaJ(r.playa)
-                ? String(r.posicion)
-                : Number(r.posicion),
-
-        fecha:
-            new Date().toISOString()
-
+        fecha: new Date().toISOString()
     };
 
     if (esPlayaJ(nuevo.playa)) {
 
-        const p = parsearPosicionJ(
-            nuevo.posicion
-        );
+        nuevo.posicion = String(r.posicion);
 
-        if (
-            p &&
-            posicionJOcupada(
-                nuevo.playa,
-                nuevo.bloque,
-                p.calle,
-                p.fila
-            )
-        ) {
+        const p = parsearPosicionJ(nuevo.posicion);
 
-            reproducirSonidoError(); 
-            // EDITABLE: mensaje de ubicacion ocupada
-            alert(
-                `La ubicacion ${nuevo.posicion} ya esta ocupada.`
-            );
-
+        if (p && posicionJOcupada(nuevo.playa, nuevo.bloque, p.calle, p.fila)) {
+            reproducirSonidoError();
+            alert(`La ubicacion ${nuevo.posicion} ya esta ocupada.`);
             ultimoCodigo = null;
             bloqueandoLectura = false;
-
             return;
-
         }
 
+    } else {
+
+        nuevo.carril = normalizarCarrilNormal(r.carril);
+        nuevo.posicion = r.posicion === "Atrás" ? "Atrás" : "Adelante";
     }
 
     vehiculos.push(nuevo);
-
     guardarDatos();
     actualizarPantalla();
 
-    document
-        .getElementById("scanResult")
-        .classList
-        .add("hidden");
+    document.getElementById("scanResult").classList.add("hidden");
 
     resultadoPendiente = null;
     ultimoCodigo = null;
@@ -660,12 +439,12 @@ function guardarNuevoVehiculo() {
 
     actualizarPosicionScanner();
 
-    // EDITABLE: mensaje despues de guardar
-    document
-        .getElementById("scannerStatus")
-        .innerText =
-        `Guardado en posicion ${nuevo.posicion}. Escanee el siguiente vehiculo.`;
+    const ubicacionGuardada = esPlayaJ(nuevo.playa)
+        ? nuevo.posicion
+        : `Carril ${nuevo.carril} - ${nuevo.posicion}`;
 
+    document.getElementById("scannerStatus").innerText =
+        `Guardado en ${ubicacionGuardada}. Escanee el siguiente vehiculo.`;
 }
 
 function cancelarResultadoScan() {
