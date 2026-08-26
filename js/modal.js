@@ -1,106 +1,110 @@
-/* ============================================================
-   MODAL GLOBAL REUTILIZABLE
-   Reemplaza alert() y prompt() nativos con modales propios.
-   ============================================================ */
+(function () {
+    "use strict";
 
-function abrirModalGlobal(opciones) {
-    return new Promise(function(resolve) {
-        const modal = document.getElementById("globalModal");
-        const titulo = document.getElementById("globalModalTitulo");
-        const mensaje = document.getElementById("globalModalMensaje");
-        const campo = document.getElementById("globalModalInput");
-        const cancelar = document.getElementById("globalModalCancelar");
-        const aceptar = document.getElementById("globalModalAceptar");
-
-        if (!modal || !titulo || !mensaje || !campo || !cancelar || !aceptar) {
-            console.error("No se encontro el modal global.");
-            resolve(opciones.tipo === "prompt" ? null : true);
-            return;
-        }
-
-        let resuelto = false;
-
-        function cerrar(resultado) {
-            if (resuelto) return;
-            resuelto = true;
-            modal.classList.add("hidden");
-            document.removeEventListener("keydown", alPresionarTecla);
-            aceptar.onclick = null;
-            cancelar.onclick = null;
-            modal.onclick = null;
-            resolve(resultado);
-        }
-
-        function alPresionarTecla(event) {
-            if (event.key === "Escape") {
-                if (opciones.tipo === "prompt") cerrar(null);
-                else cerrar(true);
-            }
-            if (event.key === "Enter") {
-                event.preventDefault();
-                cerrar(opciones.tipo === "prompt" ? campo.value : true);
-            }
-        }
-
-        titulo.textContent = opciones.titulo || "Atencion";
-        mensaje.textContent = opciones.mensaje || "";
-        aceptar.textContent = opciones.aceptar || "Aceptar";
-        aceptar.className = "btn-success";
-
-        if (opciones.tipo === "prompt") {
-            campo.value = opciones.valor || "";
-            campo.placeholder = opciones.placeholder || "";
-            campo.classList.remove("hidden");
-            cancelar.textContent = opciones.cancelar || "Cancelar";
-            cancelar.classList.remove("hidden");
-        } else {
-            campo.classList.add("hidden");
-            cancelar.classList.add("hidden");
-        }
-
-        aceptar.onclick = function() {
-            cerrar(opciones.tipo === "prompt" ? campo.value : true);
+    function obtenerElementos() {
+        return {
+            modal: document.getElementById("appDialogModal"),
+            title: document.getElementById("appDialogTitle"),
+            message: document.getElementById("appDialogMessage"),
+            inputGroup: document.getElementById("appDialogInputGroup"),
+            input: document.getElementById("appDialogInput"),
+            cancel: document.getElementById("appDialogCancel"),
+            accept: document.getElementById("appDialogAccept")
         };
+    }
 
-        cancelar.onclick = function() {
-            cerrar(null);
-        };
+    function abrirDialogo(opciones) {
+        return new Promise(function (resolve) {
+            var el = obtenerElementos();
 
-        modal.onclick = function(event) {
-            if (event.target === modal) {
-                if (opciones.tipo === "prompt") cerrar(null);
-                else cerrar(true);
+            if (!el.modal) {
+                console.error("No se encontró el modal reutilizable.");
+                resolve(opciones.type === "prompt" ? null : false);
+                return;
             }
-        };
 
-        document.addEventListener("keydown", alPresionarTecla);
-        modal.classList.remove("hidden");
+            var resuelto = false;
 
-        setTimeout(function() {
-            (opciones.tipo === "prompt" ? campo : aceptar).focus();
-            if (opciones.tipo === "prompt") campo.select();
-        }, 0);
-    });
-}
+            function cerrar(resultado) {
+                if (resuelto) return;
+                resuelto = true;
 
-function mostrarAlerta(mensaje, titulo) {
-    return abrirModalGlobal({
-        tipo: "alert",
-        titulo: titulo || "Atencion",
-        mensaje: mensaje,
-        aceptar: "Aceptar"
-    });
-}
+                document.removeEventListener("keydown", alPresionarTecla);
+                el.modal.removeEventListener("click", alClickFuera);
 
-function mostrarPrompt(mensaje, valorInicial, opciones) {
-    opciones = opciones || {};
-    return abrirModalGlobal({
-        tipo: "prompt",
-        titulo: opciones.titulo || "Ingresar dato",
-        mensaje: mensaje,
-        valor: valorInicial || "",
-        placeholder: opciones.placeholder || "",
-        aceptar: opciones.aceptar || "Continuar",
-        cancelar: opciones.cancelar || "Cancelar"
-    });
-}
+                el.modal.classList.add("hidden");
+                el.accept.onclick = null;
+                el.cancel.onclick = null;
+
+                resolve(resultado);
+            }
+
+            function alPresionarTecla(event) {
+                if (event.key === "Escape") {
+                    event.preventDefault();
+                    cerrar(opciones.type === "prompt" ? null : false);
+                }
+
+                if (event.key === "Enter") {
+                    event.preventDefault();
+
+                    if (opciones.type === "prompt") {
+                        cerrar(el.input.value);
+                    } else {
+                        cerrar(true);
+                    }
+                }
+            }
+
+            function alClickFuera(event) {
+                if (event.target === el.modal) {
+                    cerrar(opciones.type === "prompt" ? null : false);
+                }
+            }
+
+            el.title.textContent = opciones.title || "Atención";
+            el.message.textContent = opciones.message || "";
+            el.inputGroup.classList.toggle("hidden", opciones.type !== "prompt");
+            el.cancel.classList.toggle("hidden", opciones.type !== "prompt");
+            el.accept.parentElement.classList.toggle("app-dialog-one-button", opciones.type !== "prompt");
+            el.accept.textContent = opciones.acceptText || (opciones.type === "prompt" ? "Continuar" : "Aceptar");
+            el.input.value = opciones.defaultValue || "";
+
+            el.accept.onclick = function () {
+                cerrar(opciones.type === "prompt" ? el.input.value : true);
+            };
+
+            el.cancel.onclick = function () {
+                cerrar(opciones.type === "prompt" ? null : false);
+            };
+
+            el.modal.classList.remove("hidden");
+            document.addEventListener("keydown", alPresionarTecla);
+            el.modal.addEventListener("click", alClickFuera);
+
+            setTimeout(function () {
+                (opciones.type === "prompt" ? el.input : el.accept).focus();
+                if (opciones.type === "prompt") el.input.select();
+            }, 0);
+        });
+    }
+
+    window.mostrarAlerta = function (mensaje, titulo) {
+        return abrirDialogo({
+            type: "alert",
+            title: titulo || "Atención",
+            message: mensaje,
+            acceptText: "Aceptar"
+        });
+    };
+
+    window.mostrarPrompt = function (mensaje, valorInicial, titulo) {
+        return abrirDialogo({
+            type: "prompt",
+            title: titulo || "Ingresar dato",
+            message: mensaje,
+            defaultValue: valorInicial,
+            acceptText: "Continuar"
+        });
+    };
+})();

@@ -920,3 +920,6 @@ button:disabled {
         padding: 9px;
     }
 }
+
+/* Modal reutilizable para reemplazar cuadros nativos del navegador */
+.modal-buttons.app-dialog-one-button { grid-template-columns: 1fr; }

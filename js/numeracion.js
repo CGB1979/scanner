@@ -324,7 +324,7 @@ async function editarInicioPlayaEspecial() {
     if (!Number.isFinite(numero) || numero < 1) {
 
         // EDITABLE: mensaje de error
-        await mostrarAlerta("Ingrese un numero valido mayor o igual a 1.");
+        mostrarAlerta("Ingrese un numero valido mayor o igual a 1.");
 
         return;
 
