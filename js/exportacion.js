@@ -51,10 +51,10 @@ function buscarVehiculo() {
 
                 let ubicacion = "";
 
-                if (esPlayaJ(v.playa)) {
+                if (esPlayaEspecial(v.playa)) {
 
                     const p =
-                        parsearPosicionJ(
+                        parsearPosicionEspecial(
                             v.posicion
                         );
 
@@ -168,10 +168,10 @@ function eliminarVehiculo(chasis) {
 
     `;
 
-    if (esPlayaJ(v.playa)) {
+    if (esPlayaEspecial(v.playa)) {
 
         const p =
-            parsearPosicionJ(
+            parsearPosicionEspecial(
                 v.posicion
             );
 
@@ -473,10 +473,10 @@ async function exportarCSV() {
              * =========================================
              */
 
-            if (esPlayaJ(v.playa)) {
+            if (esPlayaEspecial(v.playa)) {
 
                 const p =
-                    parsearPosicionJ(
+                    parsearPosicionEspecial(
                         v.posicion
                     );
 

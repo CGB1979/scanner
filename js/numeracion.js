@@ -1,10 +1,10 @@
-function esPlayaJ(playa) {
+function esPlayaEspecial(playa) {
     return ["I", "J"].includes(String(playa).toUpperCase());
 }
 
 function actualizarOpcionesPlaya() {
 
-    const esJ = esPlayaJ(playaSelect.value);
+    const esJ = esPlayaEspecial(playaSelect.value);
 
     if (esJ) {
 
@@ -29,7 +29,7 @@ function actualizarOpcionesPlaya() {
                     value="porFila"
                 >
 
-                <!-- EDITABLE: texto de la opcion creada para Playa J -->
+                <!-- EDITABLE: texto de la opcion creada para Playa especial -->
                 <label for="modoPorFila">
                     Por fila
                 </label>
@@ -77,7 +77,7 @@ function actualizarOpcionesPlaya() {
 
 function actualizarControlesPlaya() {
 
-    const esJ = esPlayaJ(playaSelect.value);
+    const esJ = esPlayaEspecial(playaSelect.value);
 
     if (!esJ) {
 
@@ -148,7 +148,7 @@ function obtenerInicioNumeracion() {
 
 }
 
-function obtenerInicioNumeracionJ() {
+function obtenerInicioNumeracionEspecial() {
 
     let numero = parseInt(
         configuracionNumeracion.inicio,
@@ -265,7 +265,7 @@ function ajustarNumeroInicialPorModo() {
     const modo = obtenerModoNumeracion();
 
     if (
-        esPlayaJ(playaSelect.value) &&
+        esPlayaEspecial(playaSelect.value) &&
         modo === "porFila"
     ) {
 
@@ -302,13 +302,13 @@ function ajustarNumeroInicialPorModo() {
 
 }
 
-function editarInicioPlayaJ() {
+function editarInicioPlayaEspecial() {
 
-    if (!esPlayaJ(playaSelect.value)) {
+    if (!esPlayaEspecial(playaSelect.value)) {
         return;
     }
 
-    const actual = obtenerInicioNumeracionJ();
+    const actual = obtenerInicioNumeracionEspecial();
 
     // EDITABLE: texto que aparece en la ventana para cambiar el inicio
     const respuesta = prompt(
@@ -362,7 +362,7 @@ function editarInicioPlayaJ() {
 
 numberingHelp.addEventListener(
     "dblclick",
-    editarInicioPlayaJ
+    editarInicioPlayaEspecial
 );
 
 document
@@ -398,13 +398,13 @@ function actualizarAyudaNumeracion() {
 
     const modo = obtenerModoNumeracion();
 
-    if (esPlayaJ(playaSelect.value)) {
+    if (esPlayaEspecial(playaSelect.value)) {
 
-        const inicio = obtenerInicioNumeracionJ();
+        const inicio = obtenerInicioNumeracionEspecial();
 
         if (modo === "continua") {
 
-            // EDITABLE: texto de ayuda para Playa J en modo continuo
+            // EDITABLE: texto de ayuda para Playa especial en modo continuo
             numberingHelp.innerText =
                 `Doble click para cambiar el inicio. Se asignara ${inicio}-1, ${inicio}-2, ${inicio}-3, ${inicio}-4, ${inicio}-5 y luego ${inicio + 1}-1, ${inicio + 1}-2...`;
 
@@ -418,7 +418,7 @@ function actualizarAyudaNumeracion() {
 
             const fila = obtenerFilaInicial();
 
-            // EDITABLE: texto de ayuda para Playa J por fila
+            // EDITABLE: texto de ayuda para Playa especial por fila
             numberingHelp.innerText =
                 `Doble click para cambiar el inicio. Se escaneara la fila ${fila}: ${inicio}-${fila}, ${inicio + 1}-${fila}, ${inicio + 2}-${fila}, ${inicio + 3}-${fila}...`;
 
@@ -507,7 +507,7 @@ function normalizarPrimerNumero(numero) {
 
 }
 
-function convertirPosicionJ(calle, fila) {
+function convertirPosicionEspecial(calle, fila) {
 
     return (
         Number(calle) +
@@ -517,7 +517,7 @@ function convertirPosicionJ(calle, fila) {
 
 }
 
-function parsearPosicionJ(posicion) {
+function parsearPosicionEspecial(posicion) {
 
     const texto = String(posicion || "").trim();
 
@@ -554,7 +554,7 @@ function parsearPosicionJ(posicion) {
 
 }
 
-function obtenerPosicionesJOcupadas(
+function obtenerPosicionesEspecialesOcupadas(
     playa,
     bloque,
     excluirVehiculo
@@ -578,7 +578,7 @@ function obtenerPosicionesJOcupadas(
         })
         .map(function(v) {
 
-            return parsearPosicionJ(
+            return parsearPosicionEspecial(
                 v.posicion
             );
 
@@ -589,7 +589,7 @@ function obtenerPosicionesJOcupadas(
 
 }
 
-function posicionJOcupada(
+function posicionEspecialOcupada(
     playa,
     bloque,
     calle,
@@ -613,7 +613,7 @@ function posicionJOcupada(
             return false;
         }
 
-        const p = parsearPosicionJ(
+        const p = parsearPosicionEspecial(
             v.posicion
         );
 
@@ -630,7 +630,7 @@ function posicionJOcupada(
 
 }
 
-function obtenerProximaPosicionJ(
+function obtenerProximaPosicionEspecial(
     playa,
     bloque
 ) {
@@ -644,21 +644,21 @@ function obtenerProximaPosicionJ(
 
     });
 
-    const inicio = obtenerInicioNumeracionJ();
+    const inicio = obtenerInicioNumeracionEspecial();
     const modo = obtenerModoNumeracion();
 
     if (registros.length === 0) {
 
         if (modo === "porFila") {
 
-            return convertirPosicionJ(
+            return convertirPosicionEspecial(
                 inicio,
                 obtenerFilaInicial()
             );
 
         }
 
-        return convertirPosicionJ(
+        return convertirPosicionEspecial(
             inicio,
             1
         );
@@ -668,7 +668,7 @@ function obtenerProximaPosicionJ(
     const posiciones = registros
         .map(function(v) {
 
-            return parsearPosicionJ(
+            return parsearPosicionEspecial(
                 v.posicion
             );
 
@@ -681,14 +681,14 @@ function obtenerProximaPosicionJ(
 
         if (modo === "porFila") {
 
-            return convertirPosicionJ(
+            return convertirPosicionEspecial(
                 inicio,
                 obtenerFilaInicial()
             );
 
         }
 
-        return convertirPosicionJ(
+        return convertirPosicionEspecial(
             inicio,
             1
         );
@@ -719,14 +719,14 @@ function obtenerProximaPosicionJ(
 
         if (ultimaFila < 5) {
 
-            return convertirPosicionJ(
+            return convertirPosicionEspecial(
                 ultimaCalle,
                 ultimaFila + 1
             );
 
         }
 
-        return convertirPosicionJ(
+        return convertirPosicionEspecial(
             Math.max(
                 inicio,
                 ultimaCalle + 1
@@ -756,7 +756,7 @@ function obtenerProximaPosicionJ(
 
         });
 
-        return convertirPosicionJ(
+        return convertirPosicionEspecial(
             Math.max(
                 inicio,
                 mayorCalle + 1
@@ -766,7 +766,7 @@ function obtenerProximaPosicionJ(
 
     }
 
-    return convertirPosicionJ(
+    return convertirPosicionEspecial(
         inicio,
         1
     );
@@ -778,9 +778,9 @@ function obtenerProximaPosicion(
     bloque
 ) {
 
-    if (esPlayaJ(playa)) {
+    if (esPlayaEspecial(playa)) {
 
-        return obtenerProximaPosicionJ(
+        return obtenerProximaPosicionEspecial(
             playa,
             bloque
         );

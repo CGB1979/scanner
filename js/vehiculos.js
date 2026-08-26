@@ -46,13 +46,13 @@ function mostrarVehiculos() {
         })
         .sort(function(a, b) {
 
-            if (esPlayaJ(playa)) {
+            if (esPlayaEspecial(playa)) {
 
-                const pa = parsearPosicionJ(
+                const pa = parsearPosicionEspecial(
                     a.posicion
                 );
 
-                const pb = parsearPosicionJ(
+                const pb = parsearPosicionEspecial(
                     b.posicion
                 );
 
@@ -114,9 +114,9 @@ function mostrarVehiculos() {
 
         let etiquetaUbicacion = "";
 
-        if (esPlayaJ(v.playa)) {
+        if (esPlayaEspecial(v.playa)) {
 
-            const p = parsearPosicionJ(
+            const p = parsearPosicionEspecial(
                 v.posicion
             );
 

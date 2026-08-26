@@ -34,26 +34,26 @@ function abrirCambioUbicacionGeneral() {
 
     actualizarControlesCambioUbicacion();
 
-    if (esPlayaJ(playaSelect.value)) {
+    if (esPlayaEspecial(playaSelect.value)) {
 
         const posicion =
-            obtenerProximaPosicionJ(
+            obtenerProximaPosicionEspecial(
                 playaSelect.value,
                 bloqueSelect.value
             );
 
         const p =
-            parsearPosicionJ(posicion);
+            parsearPosicionEspecial(posicion);
 
         if (p) {
 
             document
-                .getElementById("cambioJCalle")
+                .getElementById("cambioEspecialCarril")
                 .value =
                 p.calle;
 
             document
-                .getElementById("cambioJFila")
+                .getElementById("cambioEspecialPosicion")
                 .value =
                 p.fila;
 
@@ -103,43 +103,43 @@ function abrirCambioUbicacionVehiculo(
 
     actualizarControlesCambioUbicacion();
 
-    if (esPlayaJ(v.playa)) {
+    if (esPlayaEspecial(v.playa)) {
 
         const p =
-            parsearPosicionJ(v.posicion);
+            parsearPosicionEspecial(v.posicion);
 
         if (p) {
 
             document
-                .getElementById("cambioJCalle")
+                .getElementById("cambioEspecialCarril")
                 .value =
                 p.calle;
 
             document
-                .getElementById("cambioJFila")
+                .getElementById("cambioEspecialPosicion")
                 .value =
                 p.fila;
 
         } else {
 
             const sugerido =
-                obtenerProximaPosicionJ(
+                obtenerProximaPosicionEspecial(
                     v.playa,
                     v.bloque
                 );
 
             const ps =
-                parsearPosicionJ(sugerido);
+                parsearPosicionEspecial(sugerido);
 
             if (ps) {
 
                 document
-                    .getElementById("cambioJCalle")
+                    .getElementById("cambioEspecialCarril")
                     .value =
                     ps.calle;
 
                 document
-                    .getElementById("cambioJFila")
+                    .getElementById("cambioEspecialPosicion")
                     .value =
                     ps.fila;
 
@@ -182,7 +182,7 @@ function actualizarControlesCambioUbicacion() {
             .value;
 
     const esJ =
-        esPlayaJ(playa);
+        esPlayaEspecial(playa);
 
     const numeroContainer =
         document.getElementById(
@@ -191,7 +191,7 @@ function actualizarControlesCambioUbicacion() {
 
     const jContainer =
         document.getElementById(
-            "cambioJCalleFilaContainer"
+            "cambioEspecialCarrilFilaContainer"
         );
 
     if (esJ) {
@@ -224,9 +224,9 @@ function obtenerProximaPosicionCambio(
     vehiculoActual
 ) {
 
-    if (esPlayaJ(playa)) {
+    if (esPlayaEspecial(playa)) {
 
-        return obtenerProximaPosicionJ(
+        return obtenerProximaPosicionEspecial(
             playa,
             bloque
         );
@@ -300,12 +300,12 @@ function actualizarPreviewCambioUbicacion() {
         document
             .getElementById("positionHint");
 
-    if (esPlayaJ(playa)) {
+    if (esPlayaEspecial(playa)) {
 
         const calle =
             parseInt(
                 document
-                    .getElementById("cambioJCalle")
+                    .getElementById("cambioEspecialCarril")
                     .value,
                 10
             );
@@ -313,7 +313,7 @@ function actualizarPreviewCambioUbicacion() {
         const fila =
             parseInt(
                 document
-                    .getElementById("cambioJFila")
+                    .getElementById("cambioEspecialPosicion")
                     .value,
                 10
             );
@@ -350,19 +350,19 @@ function actualizarPreviewCambioUbicacion() {
         }
 
         const posicion =
-            convertirPosicionJ(
+            convertirPosicionEspecial(
                 calle,
                 fila
             );
 
-        // EDITABLE: formato de vista previa de Playa J
+        // EDITABLE: formato de vista previa de Playa especial
         document
             .getElementById("locationPreview")
             .innerText =
             `Nueva ubicacion: \nPlaya ${playa} - Bloque ${bloque} \nCarril ${calle} - Posicion ${fila} - Ubicacion ${posicion}`;
 
         const ocupado =
-            posicionJOcupada(
+            posicionEspecialOcupada(
                 playa,
                 bloque,
                 calle,
@@ -486,14 +486,14 @@ document
     );
 
 document
-    .getElementById("cambioJCalle")
+    .getElementById("cambioEspecialCarril")
     .addEventListener(
         "input",
         actualizarPreviewCambioUbicacion
     );
 
 document
-    .getElementById("cambioJFila")
+    .getElementById("cambioEspecialPosicion")
     .addEventListener(
         "change",
         actualizarPreviewCambioUbicacion
@@ -513,26 +513,26 @@ function sugerirNumeroCambio() {
 
     actualizarControlesCambioUbicacion();
 
-    if (esPlayaJ(playa)) {
+    if (esPlayaEspecial(playa)) {
 
         const sugerido =
-            obtenerProximaPosicionJ(
+            obtenerProximaPosicionEspecial(
                 playa,
                 bloque
             );
 
         const p =
-            parsearPosicionJ(sugerido);
+            parsearPosicionEspecial(sugerido);
 
         if (p) {
 
             document
-                .getElementById("cambioJCalle")
+                .getElementById("cambioEspecialCarril")
                 .value =
                 p.calle;
 
             document
-                .getElementById("cambioJFila")
+                .getElementById("cambioEspecialPosicion")
                 .value =
                 p.fila;
 
@@ -572,12 +572,12 @@ function confirmarCambioUbicacion() {
             .getElementById("cambioBloque")
             .value;
 
-    if (esPlayaJ(playa)) {
+    if (esPlayaEspecial(playa)) {
 
         const calle =
             parseInt(
                 document
-                    .getElementById("cambioJCalle")
+                    .getElementById("cambioEspecialCarril")
                     .value,
                 10
             );
@@ -585,7 +585,7 @@ function confirmarCambioUbicacion() {
         const fila =
             parseInt(
                 document
-                    .getElementById("cambioJFila")
+                    .getElementById("cambioEspecialPosicion")
                     .value,
                 10
             );
@@ -620,7 +620,7 @@ function confirmarCambioUbicacion() {
         }
 
         const ocupado =
-            posicionJOcupada(
+            posicionEspecialOcupada(
                 playa,
                 bloque,
                 calle,
@@ -696,7 +696,7 @@ function confirmarCambioUbicacion() {
             bloque;
 
         vehiculos[indice].posicion =
-            convertirPosicionJ(
+            convertirPosicionEspecial(
                 calle,
                 fila
             );

@@ -325,9 +325,9 @@ reproducirSonidoNuevo();
 
     let infoUbicacion = "";
 
-    if (esPlayaJ(ubicacion.playa)) {
+    if (esPlayaEspecial(ubicacion.playa)) {
 
-        const p = parsearPosicionJ(posicion);
+        const p = parsearPosicionEspecial(posicion);
 
         if (p) {
 
@@ -449,9 +449,9 @@ function mostrarVehiculoExistente(v) {
 
     let ubicacionActual = "";
 
-    if (esPlayaJ(v.playa)) {
+    if (esPlayaEspecial(v.playa)) {
 
-        const p = parsearPosicionJ(
+        const p = parsearPosicionEspecial(
             v.posicion
         );
 
@@ -604,7 +604,7 @@ function guardarNuevoVehiculo() {
         bloque: r.bloque,
 
         posicion:
-            esPlayaJ(r.playa)
+            esPlayaEspecial(r.playa)
                 ? String(r.posicion)
                 : Number(r.posicion),
 
@@ -613,15 +613,15 @@ function guardarNuevoVehiculo() {
 
     };
 
-    if (esPlayaJ(nuevo.playa)) {
+    if (esPlayaEspecial(nuevo.playa)) {
 
-        const p = parsearPosicionJ(
+        const p = parsearPosicionEspecial(
             nuevo.posicion
         );
 
         if (
             p &&
-            posicionJOcupada(
+            posicionEspecialOcupada(
                 nuevo.playa,
                 nuevo.bloque,
                 p.calle,
