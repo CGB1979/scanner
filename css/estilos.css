@@ -864,7 +864,7 @@ button:disabled {
     transform: translateX(-50%);
     width: 100%;
     max-width: 720px;
-    background: #ffffff;
+    background: #5f9a3d;
     padding: 10px 16px 12px;
     border-top: 2px solid #d9dee3;
     box-shadow: 0 -3px 12px rgba(0,0,0,.10);
