@@ -472,7 +472,7 @@ function actualizarAyudaNumeracion() {
 
         // EDITABLE: texto de ayuda para numeracion continua
         numberingHelp.innerText =
-            `Se asignara ${inicio}, ${inicio + 1}, ${inicio + 2}, ${inicio + 3}...`;
+            `Se asignara ${inicio}, ${inicio + 1}, ${inicio + 2}, ${inicio + 3}...\n`;
 
         return;
 
@@ -488,7 +488,7 @@ function actualizarAyudaNumeracion() {
 
         // EDITABLE: texto de ayuda para numeros pares
         numberingHelp.innerText =
-            `Se asignara ${primero}, ${primero + 2}, ${primero + 4}, ${primero + 6}...`;
+            `Se asignara ${primero}, ${primero + 2}, ${primero + 4}, ${primero + 6}...\n`;
 
         return;
 
