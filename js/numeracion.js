@@ -66,8 +66,37 @@ function actualizarOpcionesPlaya() {
         opcionFila.classList.add("hidden");
     }
 
+    organizarControlesInicio(false);
+
     numeroInicialContainer.classList.remove("hidden");
     filaInicialContainer.classList.add("hidden");
+
+}
+
+function organizarControlesInicio(modoPorFila) {
+
+    let contenedor = document.getElementById("controlesInicioRow");
+
+    if (!contenedor) {
+
+        contenedor = document.createElement("div");
+        contenedor.id = "controlesInicioRow";
+
+        numeroInicialContainer.parentNode.insertBefore(
+            contenedor,
+            numeroInicialContainer
+        );
+
+        contenedor.appendChild(numeroInicialContainer);
+        contenedor.appendChild(filaInicialContainer);
+
+    }
+
+    contenedor.style.display = "grid";
+    contenedor.style.gap = "12px";
+    contenedor.style.gridTemplateColumns = modoPorFila
+        ? "1fr 1fr"
+        : "1fr";
 
 }
 
@@ -76,6 +105,8 @@ function actualizarControlesPlaya() {
     const esJ = esPlayaEspecial(playaSelect.value);
 
     if (!esJ) {
+
+        organizarControlesInicio(false);
 
         numeroInicialContainer.classList.remove("hidden");
         filaInicialContainer.classList.add("hidden");
@@ -91,9 +122,12 @@ function actualizarControlesPlaya() {
     // En playas especiales tambien debe mostrarse el numero inicial,
     // igual que en las playas normales. Este valor indica el carril
     // desde el que comienza la asignacion.
+    organizarControlesInicio(modo === "porFila");
     numeroInicialContainer.classList.remove("hidden");
 
-    // En modo "Por fila" se muestra ademas la fila de inicio.
+    // En modo "Por fila" se muestra ademas la fila de inicio,
+    // ubicada junto al numero inicial para conservar la misma altura
+    // y armonia visual de la configuracion.
     if (modo === "porFila") {
         filaInicialContainer.classList.remove("hidden");
     } else {
