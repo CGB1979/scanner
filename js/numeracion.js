@@ -454,7 +454,7 @@ function actualizarAyudaNumeracion() {
 
             // EDITABLE: texto de ayuda para Playa especial por fila
             numberingHelp.innerText =
-                `Se escaneara la fila ${fila}: ${inicio}-${fila}, ${inicio + 1}-${fila}, ${inicio + 2}-${fila}, ${inicio + 3}-${fila}, ${inicio + 4}-${fila}, ${inicio + 5}-${fila}...\n    `;
+                `Se escaneara la fila ${fila}: ${inicio}-${fila}, ${inicio + 1}-${fila}, ${inicio + 2}-${fila}, ${inicio + 3}-${fila}, ${inicio + 4}-${fila}, ${inicio + 5}-${fila}...`;
 
             numberingHelp.classList.add("editable-j");
 
