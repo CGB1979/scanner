@@ -226,6 +226,11 @@ input:focus {
     margin-top: 5px;
 }
 
+/* Playas especiales: cuando aparece la opcion "Por fila", hay solo dos botones visibles. */
+.numbering-options:has(#modoPorFilaContainer:not(.hidden)) {
+    grid-template-columns: 1fr 1fr;
+}
+
 .numbering-option {
     position: relative;
 }
@@ -807,6 +812,11 @@ button:disabled {
     .numbering-options {
         grid-template-columns: 1fr 1fr 1fr;
         gap: 6px;
+    }
+
+    /* En playas especiales, los dos botones ocupan el mismo ancho que Playa y Bloque. */
+    .numbering-options:has(#modoPorFilaContainer:not(.hidden)) {
+        grid-template-columns: 1fr 1fr;
     }
 
     .numbering-option label {
