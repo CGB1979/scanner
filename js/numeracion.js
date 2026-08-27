@@ -440,7 +440,7 @@ function actualizarAyudaNumeracion() {
 
             // EDITABLE: texto de ayuda para Playa especial en modo continuo
             numberingHelp.innerText =
-                `Doble click para cambiar el inicio. Se asignara ${inicio}-1, ${inicio}-2, ${inicio}-3, ${inicio}-4, ${inicio}-5 y luego ${inicio + 1}-1, ${inicio + 1}-2...`;
+                `Se asignara ${inicio}-1, ${inicio}-2, ${inicio}-3, ${inicio}-4, ${inicio}-5 y luego ${inicio + 1}-1, ${inicio + 1}-2...`;
 
             numberingHelp.classList.add("editable-j");
 
@@ -454,7 +454,7 @@ function actualizarAyudaNumeracion() {
 
             // EDITABLE: texto de ayuda para Playa especial por fila
             numberingHelp.innerText =
-                `Doble click para cambiar el inicio. Se escaneara la fila ${fila}: ${inicio}-${fila}, ${inicio + 1}-${fila}, ${inicio + 2}-${fila}, ${inicio + 3}-${fila}...`;
+                `Se escaneara la fila ${fila}: ${inicio}-${fila}, ${inicio + 1}-${fila}, ${inicio + 2}-${fila}, ${inicio + 3}-${fila}...`;
 
             numberingHelp.classList.add("editable-j");
 
