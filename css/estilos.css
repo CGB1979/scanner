@@ -200,6 +200,12 @@ input {
     outline: none;
     transition: border-color .15s, box-shadow .15s;
 }
+/* Igualar altura de Numero inicial y Fila inicial */
+#numeroInicial,
+#filaInicial {
+    height: 48px;
+    box-sizing: border-box;
+}
 
 select:focus,
 input:focus {
