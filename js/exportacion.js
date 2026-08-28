@@ -335,23 +335,23 @@ async function exportarCSV() {
 
     /*
      * PRUEBA AISLADA DE COMPARTIR EN ANDROID.
-     * No genera ni descarga Excel en esta prueba.
-     * Genera un archivo TXT temporal y llama al sistema nativo de compartir.
+     * Genera un archivo XML temporal y llama
+     * al sistema nativo de compartir.
      */
 
-    const contenido =
-        "PRUEBA DE COMPARTIR ARCHIVO\n\n" +
-        "Si recibiste este archivo correctamente, " +
-        "la funcion de compartir del dispositivo funciona.";
+    const contenido = `<?xml version="1.0" encoding="UTF-8"?>
+<prueba>
+    <mensaje>Prueba de compartir archivo XML</mensaje>
+    <resultado>Si recibiste este archivo, la funcion funciona correctamente.</resultado>
+</prueba>`;
 
-    const archivo =
-        new File(
-            [contenido],
-            "prueba_compartir.xml",
-            {
-                type: "application/xml"
-            }
-        );
+    const archivo = new File(
+        [contenido],
+        "prueba_compartir.xml",
+        {
+            type: "application/xml"
+        }
+    );
 
     try {
 
@@ -367,42 +367,33 @@ async function exportarCSV() {
 
         if (
             !navigator.canShare ||
-            !navigator.canShare(
-                {
-                    files: [archivo]
-                }
-            )
+            !navigator.canShare({
+                files: [archivo]
+            })
         ) {
 
             mostrarAlerta(
-                "Este navegador no admite compartir archivos TXT desde la Web Share API."
+                "Este navegador no admite compartir archivos XML desde la Web Share API."
             );
 
             return;
 
         }
 
-        await navigator.share(
-            {
-                title:
-                    "Prueba de compartir",
-
-                text:
-                    "Archivo de prueba",
-
-                files:
-                    [archivo]
-            }
-        );
+        await navigator.share({
+            title: "Prueba de compartir XML",
+            text: "Archivo XML de prueba",
+            files: [archivo]
+        });
 
         mostrarAlerta(
-            "Archivo compartido correctamente."
+            "Archivo XML compartido correctamente."
         );
 
     } catch (error) {
 
         console.error(
-            "Error al compartir archivo TXT:",
+            "Error al compartir archivo XML:",
             error
         );
 
