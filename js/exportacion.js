@@ -332,17 +332,11 @@ function guardarDatos() {
 }
 
 async function exportarCSV() {
-
-    /*
-     * PRUEBA AISLADA DE COMPARTIR EN ANDROID.
-     * Genera un archivo XML temporal y llama
-     * al sistema nativo de compartir.
-     */
+async function exportarCSV() {
 
     const contenido = `<?xml version="1.0" encoding="UTF-8"?>
 <prueba>
     <mensaje>Prueba de compartir archivo XML</mensaje>
-    <resultado>Si recibiste este archivo, la funcion funciona correctamente.</resultado>
 </prueba>`;
 
     const archivo = new File(
@@ -353,65 +347,36 @@ async function exportarCSV() {
         }
     );
 
+    if (!navigator.share) {
+
+        mostrarAlerta(
+            "Este navegador no admite compartir."
+        );
+
+        return;
+
+    }
+
     try {
 
-        if (!navigator.share) {
-
-            mostrarAlerta(
-                "Este navegador no dispone de la funcion nativa de compartir."
-            );
-
-            return;
-
-        }
-
-        if (
-            !navigator.canShare ||
-            !navigator.canShare({
-                files: [archivo]
-            })
-        ) {
-
-            mostrarAlerta(
-                "Este navegador no admite compartir archivos XML desde la Web Share API."
-            );
-
-            return;
-
-        }
-
         await navigator.share({
-            title: "Prueba de compartir XML",
-            text: "Archivo XML de prueba",
             files: [archivo]
         });
 
-        mostrarAlerta(
-            "Archivo XML compartido correctamente."
-        );
-
     } catch (error) {
 
-        console.error(
-            "Error al compartir archivo XML:",
-            error
-        );
+        console.error("Error real:", error);
 
         if (
-            error &&
-            error.name === "AbortError"
+            error.name !== "AbortError"
         ) {
-            return;
-        }
 
-        mostrarAlerta(
-            "Error al compartir: " +
-            (
-                error && error.name
-                    ? error.name
-                    : "desconocido"
-            )
-        );
+            mostrarAlerta(
+                "Error al compartir: " +
+                error.name
+            );
+
+        }
 
     }
 
