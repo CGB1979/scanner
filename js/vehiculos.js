@@ -121,7 +121,6 @@ function mostrarVehiculos() {
 
             if (p) {
 
-                // EDITABLE: textos que describen la ubicacion de vehiculos
                 etiquetaUbicacion = `
                     <div class="vehicle-info">
                         Playa ${escapeHTML(v.playa)}
@@ -136,7 +135,6 @@ function mostrarVehiculos() {
 
             } else {
 
-                // EDITABLE: textos que describen la ubicacion de vehiculos
                 etiquetaUbicacion = `
                     <div class="vehicle-info">
                         Playa ${escapeHTML(v.playa)}
@@ -149,24 +147,41 @@ function mostrarVehiculos() {
 
         } else {
 
-            // EDITABLE: textos que describen la ubicacion de vehiculos
-            etiquetaUbicacion = `
-                <div class="vehicle-info">
-                    Playa ${escapeHTML(v.playa)}
-                    -
-                    Bloque ${escapeHTML(v.bloque)}
-                </div>
-            `;
+            const ubicacion =
+                obtenerUbicacionNormal(v.posicion);
+
+            if (ubicacion) {
+
+                etiquetaUbicacion = `
+                    <div class="vehicle-info">
+                        Playa ${escapeHTML(v.playa)}
+                        -
+                        Bloque ${escapeHTML(v.bloque)}
+                        -
+                        Carril ${escapeHTML(ubicacion.carril)}
+                        -
+                        ${escapeHTML(ubicacion.posicion)}
+                    </div>
+                `;
+
+            } else {
+
+                etiquetaUbicacion = `
+                    <div class="vehicle-info">
+                        Playa ${escapeHTML(v.playa)}
+                        -
+                        Bloque ${escapeHTML(v.bloque)}
+                    </div>
+                `;
+
+            }
 
         }
 
         div.innerHTML = `
 
             <div class="vehicle-position">
-
-                <!-- EDITABLE: texto antes de la posicion -->
-                Ubicacion ${escapeHTML(v.posicion)}
-
+                Chasis
             </div>
 
             <div class="vehicle-chassis">
@@ -199,5 +214,3 @@ function mostrarVehiculos() {
     });
 
 }
-
-async
