@@ -331,9 +331,10 @@ function guardarDatos() {
 
 }
 
+let archivoExcelTemporal = null;
+let nombreArchivoExcelTemporal = "vehiculos_playa.xlsx";
 
-
-function abrirModalExportar() {
+function exportarCSV() {
 
     if (vehiculos.length === 0) {
 
@@ -342,133 +343,409 @@ function abrirModalExportar() {
         );
 
         return;
+
     }
 
-    document
-        .getElementById("exportModal")
-        .classList
-        .remove("hidden");
+    mostrarCargaExportacion();
+
+    /*
+     * Dejamos que el modal de carga se pinte antes
+     * de iniciar la generacion del Excel.
+     */
+    setTimeout(
+        async function() {
+
+            try {
+
+                archivoExcelTemporal =
+                    await generarArchivoExcelTemporal();
+
+                ocultarCargaExportacion();
+
+                document
+                    .getElementById("exportarExcelModal")
+                    .classList
+                    .remove("hidden");
+
+            } catch (error) {
+
+                console.error(
+                    "Error al generar Excel:",
+                    error
+                );
+
+                ocultarCargaExportacion();
+
+                mostrarAlerta(
+                    "No se pudo generar el archivo Excel."
+                );
+
+            }
+
+        },
+        50
+    );
 
 }
 
-function cerrarModalExportar() {
+async function generarArchivoExcelTemporal() {
 
-    document
-        .getElementById("exportModal")
-        .classList
-        .add("hidden");
+    const workbook =
+        new ExcelJS.Workbook();
 
-}
+    const worksheet =
+        workbook.addWorksheet(
+            "Vehiculos"
+        );
 
-async function obtenerArchivoExcel() {
+    worksheet.columns = [
 
-    const blob =
-        await generarExcelBlob();
+        {
+            header: "Numero de chasis",
+            key: "chasis",
+            width: 25
+        },
+
+        {
+            header: "Playa",
+            key: "playa",
+            width: 15
+        },
+
+        {
+            header: "Bloque",
+            key: "bloque",
+            width: 15
+        },
+
+        {
+            header: "Carril",
+            key: "calle",
+            width: 15
+        },
+
+        {
+            header: "Posicion",
+            key: "fila",
+            width: 15
+        },
+
+        {
+            header: "Ubicacion",
+            key: "ubicacion",
+            width: 18
+        }
+
+    ];
+
+    const encabezado =
+        worksheet.getRow(1);
+
+    encabezado.font = {
+
+        bold: true,
+
+        color: {
+            argb: "FFFFFFFF"
+        }
+
+    };
+
+    for (let c = 1; c <= 6; c++) {
+
+        encabezado.getCell(c).fill = {
+            type: "pattern",
+            pattern: "solid",
+            fgColor: {
+                argb: "70AD47"
+            }
+        };
+
+    }
+
+    encabezado.alignment = {
+
+        vertical: "middle",
+
+        horizontal: "center"
+
+    };
+
+    encabezado.height = 25;
+
+    for (
+        let i = 0;
+        i < vehiculos.length;
+        i++
+    ) {
+
+        const v =
+            vehiculos[i];
+
+        let calle = "";
+        let fila = "";
+        let ubicacion = "";
+
+        if (esPlayaEspecial(v.playa)) {
+
+            const p =
+                parsearPosicionEspecial(
+                    v.posicion
+                );
+
+            if (p) {
+
+                calle = String(p.calle);
+                fila = String(p.fila);
+
+                ubicacion =
+                    `${v.playa} - ${v.bloque} - ${p.calle} - ${p.fila}`;
+
+            } else {
+
+                ubicacion =
+                    `${v.playa} - ${v.bloque} - ${String(v.posicion)}`;
+
+            }
+
+        } else {
+
+            const p =
+                obtenerUbicacionNormal(
+                    v.posicion
+                );
+
+            if (p) {
+
+                calle = String(p.carril);
+                fila = String(p.posicion);
+
+                ubicacion =
+                    `${v.playa} - ${v.bloque} - ${p.carril}`;
+
+            } else {
+
+                ubicacion =
+                    `${v.playa} - ${v.bloque} - ${String(v.posicion)}`;
+
+            }
+
+        }
+
+        const filaExcel =
+            worksheet.addRow({
+
+                chasis:
+                    String(v.chasis),
+
+                playa:
+                    String(v.playa),
+
+                bloque:
+                    String(v.bloque),
+
+                calle:
+                    String(calle),
+
+                fila:
+                    String(fila),
+
+                ubicacion:
+                    ubicacion
+
+            });
+
+        for (
+            let c = 1;
+            c <= 6;
+            c++
+        ) {
+
+            filaExcel
+                .getCell(c)
+                .numFmt = "@";
+
+        }
+
+        filaExcel.height = 15;
+
+        filaExcel.alignment = {
+
+            vertical:
+                "middle",
+
+            horizontal:
+                "center"
+
+        };
+
+    }
+
+    worksheet.autoFilter = {
+
+        from:
+            "A1",
+
+        to:
+            "F" +
+            (vehiculos.length + 1)
+
+    };
+
+    worksheet.views = [
+
+        {
+
+            state:
+                "frozen",
+
+            ySplit:
+                1
+
+        }
+
+    ];
+
+    const buffer =
+        await workbook.xlsx.writeBuffer();
 
     return new File(
-        [blob],
-        "vehiculos_playa.xlsx",
+        [buffer],
+        nombreArchivoExcelTemporal,
         {
+
             type:
                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+
         }
     );
 
 }
 
-async function guardarExcel() {
+function mostrarCargaExportacion() {
 
-    try {
-
-        const archivo =
-            await obtenerArchivoExcel();
-
-        const url =
-            URL.createObjectURL(
-                archivo
-            );
-
-        const enlace =
-            document.createElement(
-                "a"
-            );
-
-        enlace.href =
-            url;
-
-        enlace.download =
-            archivo.name;
-
-        document
-            .body
-            .appendChild(
-                enlace
-            );
-
-        enlace.click();
-
-        document
-            .body
-            .removeChild(
-                enlace
-            );
-
-        URL.revokeObjectURL(
-            url
-        );
-
-        cerrarModalExportar();
-
-    } catch (error) {
-
-        console.error(
-            "Error al guardar Excel:",
-            error
-        );
-
-        mostrarAlerta(
-            "No se pudo generar el archivo Excel."
-        );
-
-    }
+    document
+        .getElementById("exportarExcelCargaModal")
+        .classList
+        .remove("hidden");
 
 }
 
-async function compartirExcel() {
+function ocultarCargaExportacion() {
+
+    document
+        .getElementById("exportarExcelCargaModal")
+        .classList
+        .add("hidden");
+
+}
+
+function guardarExcelTemporal() {
+
+    if (!archivoExcelTemporal) {
+
+        mostrarAlerta(
+            "El archivo Excel todavia no esta disponible."
+        );
+
+        return;
+
+    }
+
+    const url =
+        URL.createObjectURL(
+            archivoExcelTemporal
+        );
+
+    const enlace =
+        document.createElement("a");
+
+    enlace.href = url;
+
+    enlace.download =
+        nombreArchivoExcelTemporal;
+
+    document
+        .body
+        .appendChild(enlace);
+
+    enlace.click();
+
+    document
+        .body
+        .removeChild(enlace);
+
+    setTimeout(
+        function() {
+
+            URL.revokeObjectURL(url);
+
+        },
+        1000
+    );
+
+}
+
+async function compartirExcelTemporal() {
+
+    if (!archivoExcelTemporal) {
+
+        mostrarAlerta(
+            "El archivo Excel todavia no esta disponible."
+        );
+
+        return;
+
+    }
+
+    const datosCompartir = {
+
+        title:
+            "Vehiculos Playa",
+
+        text:
+            "Archivo Excel con los vehiculos registrados.",
+
+        files:
+            [
+                archivoExcelTemporal
+            ]
+
+    };
+
+    if (
+        !navigator.share ||
+        !navigator.canShare ||
+        !navigator.canShare(datosCompartir)
+    ) {
+
+        mostrarAlerta(
+            "Este dispositivo o navegador no permite compartir archivos Excel. Puedes usar la opcion Guardar como Excel."
+        );
+
+        return;
+
+    }
 
     try {
 
-        const archivo =
-            await obtenerArchivoExcel();
-
-        if (
-            navigator.share &&
-            navigator.canShare &&
-            navigator.canShare({
-                files: [archivo]
-            })
-        ) {
-
-            await navigator.share({
-                title: "Vehiculos de playa",
-                text: "Archivo Excel de vehiculos.",
-                files: [archivo]
-            });
-
-            cerrarModalExportar();
-
-            return;
-
-        }
-
-        mostrarAlerta(
-            "Este dispositivo o navegador no permite compartir archivos directamente. Puede usar Guardar como Excel."
+        await navigator.share(
+            datosCompartir
         );
 
     } catch (error) {
 
-        if (error && error.name === "AbortError") {
+        /*
+         * AbortError significa que el usuario cerro
+         * el menu de compartir. No es un error real.
+         */
+        if (
+            error &&
+            error.name === "AbortError"
+        ) {
+
             return;
+
         }
 
         console.error(
@@ -484,312 +761,18 @@ async function compartirExcel() {
 
 }
 
-async function generarExcelBlob() {
-
-    try {
-
-        const workbook =
-            new ExcelJS.Workbook();
-
-        /*
-         * =========================================
-         * HOJA PRINCIPAL
-         * =========================================
-         */
-
-        const worksheet =
-            workbook.addWorksheet(
-                "Vehiculos"
-            );
-
-        /*
-         * =========================================
-         * COLUMNAS
-         * SIN CODIGO DE BARRAS
-         * =========================================
-         */
-
-        worksheet.columns = [
-
-            {
-                header: "Numero de chasis",
-                key: "chasis",
-                width: 25
-            },
-
-            {
-                header: "Playa",
-                key: "playa",
-                width: 15
-            },
-
-            {
-                header: "Bloque",
-                key: "bloque",
-                width: 15
-            },
-
-            {
-                header: "Carril",
-                key: "calle",
-                width: 15
-            },
-
-            {
-                header: "Posicion",
-                key: "fila",
-                width: 15
-            },
-
-            {
-                header: "Ubicacion",
-                key: "ubicacion",
-                width: 18
-            }
-
-        ];
-
-        /*
-         * =========================================
-         * ENCABEZADO
-         * =========================================
-         */
-
-        const encabezado =
-            worksheet.getRow(1);
-
-        encabezado.font = {
-
-            bold: true,
-
-            color: {
-                argb: "FFFFFFFF"
-            }
-
-        };
-
-        for (let c = 1; c <= 6; c++) {
-    encabezado.getCell(c).fill = {
-        type: "pattern",
-        pattern: "solid",
-        fgColor: {
-            argb: "70AD47"
-        }
-    };
-}
-
-        encabezado.alignment = {
-
-            vertical: "middle",
-
-            horizontal: "center"
-
-        };
-
-        encabezado.height = 25;
-
-
-        /*
-         * =========================================
-         * CREAR VEHICULOS
-         * =========================================
-         */
-
-        for (
-            let i = 0;
-            i < vehiculos.length;
-            i++
-        ) {
-
-            const v =
-                vehiculos[i];
-
-            let calle = "";
-            let fila = "";
-            let ubicacion = "";
-
-            if (esPlayaEspecial(v.playa)) {
-                const p = parsearPosicionEspecial(v.posicion);
-
-                if (p) {
-                    calle = String(p.calle);
-                    fila = String(p.fila);
-                    ubicacion = `${v.playa} - ${v.bloque} - ${p.calle} - ${p.fila}`;
-                } else {
-                    ubicacion = `${v.playa} - ${v.bloque} - ${String(v.posicion)}`;
-                }
-            } else {
-                const p = obtenerUbicacionNormal(v.posicion);
-
-                if (p) {
-                    calle = String(p.carril);
-                    fila = String(p.posicion);
-                    ubicacion = `${v.playa} - ${v.bloque} - ${p.carril}`;
-                } else {
-                    ubicacion = `${v.playa} - ${v.bloque} - ${String(v.posicion)}`;
-                }
-            }
-
-            /*
-             * =========================================
-             * DATOS
-             * =========================================
-             */
-
-            const chasis =
-                String(v.chasis);
-
-            const playa =
-                String(v.playa);
-
-            const bloque =
-                String(v.bloque);
-
-
-
-            /*
-             * =========================================
-             * AGREGAR FILA
-             * =========================================
-             */
-
-            const filaExcel =
-                worksheet.addRow({
-
-                    chasis:
-                        chasis,
-
-                    playa:
-                        playa,
-
-                    bloque:
-                        bloque,
-
-                    calle:
-                        String(calle),
-
-                    fila:
-                        String(fila),
-
-                    ubicacion:
-                        ubicacion
-
-                });
-
-
-            /*
-             * =========================================
-             * TODAS LAS CELDAS COMO TEXTO
-             * =========================================
-             */
-
-            for (
-                let c = 1;
-                c <= 6;
-                c++
-            ) {
-
-                filaExcel
-                    .getCell(c)
-                    .numFmt = "@";
-
-            }
-
-
-            /*
-             * =========================================
-             * ALINEACION
-             * =========================================
-             */
-
-            filaExcel.height = 15;
-
-            filaExcel.alignment = {
-
-                vertical:
-                    "middle",
-
-                horizontal:
-                    "center"
-
-            };
-
-        }
-
-
-        /*
-         * =========================================
-         * FILTROS
-         * =========================================
-         */
-
-        worksheet.autoFilter = {
-
-            from:
-                "A1",
-
-            to:
-                "F" +
-                (vehiculos.length + 1)
-
-        };
-
-
-        /*
-         * =========================================
-         * CONGELAR ENCABEZADO
-         * =========================================
-         */
-
-        worksheet.views = [
-
-            {
-
-                state:
-                    "frozen",
-
-                ySplit:
-                    1
-
-            }
-
-        ];
-
-
-        /*
-         * =========================================
-         * GENERAR ARCHIVO XLSX
-         * =========================================
-         */
-
-        const buffer =
-            await workbook.xlsx.writeBuffer();
-
-
-        const blob =
-            new Blob(
-                [buffer],
-                {
-
-                    type:
-                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-
-                }
-            );
-
-
-        return blob;
-
-    } catch (error) {
-
-        console.error(
-            "Error al generar Excel:",
-            error
-        );
-
-        throw error;
-
-    }
+function cerrarExportarExcelModal() {
+
+    document
+        .getElementById("exportarExcelModal")
+        .classList
+        .add("hidden");
+
+    /*
+     * Liberamos la referencia del archivo temporal.
+     * El navegador liberara la memoria cuando corresponda.
+     */
+    archivoExcelTemporal = null;
 
 }
 
