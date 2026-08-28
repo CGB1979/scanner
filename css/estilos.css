@@ -499,8 +499,14 @@ button:disabled {
 
 .top-buttons {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+}
+
+.top-buttons button {
+    min-height: 38px;
+    padding: 8px 6px;
+    font-size: 13px;
 }
 
 #scannerModal {
@@ -847,8 +853,14 @@ button:disabled {
 
     .top-buttons {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+}
+
+.top-buttons button {
+    min-height: 38px;
+    padding: 8px 6px;
+    font-size: 13px;
 }
 
 /* =========================================
@@ -873,7 +885,7 @@ button:disabled {
     width: 100%;
     max-width: 720px;
     background: #5f9a3d !important;
-    padding: 10px 16px 12px;
+    padding: 6px 12px 7px;
     border-top: 2px solid #d9dee3;
     box-shadow: 0 -3px 12px rgba(0,0,0,.10);
     z-index: 900;
@@ -947,73 +959,3 @@ button:disabled {
 
 /* Modal reutilizable para reemplazar cuadros nativos del navegador */
 .modal-buttons.app-dialog-one-button { grid-template-columns: 1fr; }
-
-
-/* Modal de exportación y carga de Excel */
-.excel-modal {
-    position: fixed;
-    inset: 0;
-    z-index: 10000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-    background: rgba(0, 0, 0, 0.55);
-}
-
-.excel-modal.hidden {
-    display: none;
-}
-
-.excel-modal-box {
-    width: min(100%, 420px);
-    padding: 24px;
-    border-radius: 16px;
-    background: #ffffff;
-    text-align: center;
-    box-sizing: border-box;
-}
-
-.excel-modal-box h2 {
-    margin: 0 0 12px;
-}
-
-.excel-modal-box p {
-    margin: 0 0 20px;
-}
-
-.excel-modal-actions {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.excel-modal-actions button {
-    width: 100%;
-}
-
-.excel-share-button {
-    background: #1976d2;
-    color: #ffffff;
-}
-
-.excel-loading-box {
-    padding-top: 30px;
-    padding-bottom: 30px;
-}
-
-.excel-spinner {
-    width: 42px;
-    height: 42px;
-    margin: 0 auto 18px;
-    border: 5px solid #dddddd;
-    border-top-color: #1976d2;
-    border-radius: 50%;
-    animation: excel-spin 0.8s linear infinite;
-}
-
-@keyframes excel-spin {
-    to {
-        transform: rotate(360deg);
-    }
-}

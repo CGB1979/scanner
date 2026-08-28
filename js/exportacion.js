@@ -331,26 +331,244 @@ function guardarDatos() {
 
 }
 
-async function exportarCSV() {
-async function exportarCSV() {
+async function crearExcelBuffer() {
 
-    const contenido = `<?xml version="1.0" encoding="UTF-8"?>
-<prueba>
-    <mensaje>Prueba de compartir archivo XML</mensaje>
-</prueba>`;
+    const workbook =
+        new ExcelJS.Workbook();
 
-    const archivo = new File(
-        [contenido],
-        "prueba_compartir.xml",
+    const worksheet =
+        workbook.addWorksheet(
+            "Vehiculos"
+        );
+
+    worksheet.columns = [
+
         {
-            type: "application/xml"
-        }
-    );
+            header: "Numero de chasis",
+            key: "chasis",
+            width: 25
+        },
 
-    if (!navigator.share) {
+        {
+            header: "Playa",
+            key: "playa",
+            width: 15
+        },
+
+        {
+            header: "Bloque",
+            key: "bloque",
+            width: 15
+        },
+
+        {
+            header: "Carril",
+            key: "calle",
+            width: 15
+        },
+
+        {
+            header: "Posicion",
+            key: "fila",
+            width: 15
+        },
+
+        {
+            header: "Ubicacion",
+            key: "ubicacion",
+            width: 18
+        }
+
+    ];
+
+    const encabezado =
+        worksheet.getRow(1);
+
+    encabezado.font = {
+
+        bold: true,
+
+        color: {
+            argb: "FFFFFFFF"
+        }
+
+    };
+
+    for (let c = 1; c <= 6; c++) {
+
+        encabezado.getCell(c).fill = {
+
+            type: "pattern",
+
+            pattern: "solid",
+
+            fgColor: {
+                argb: "70AD47"
+            }
+
+        };
+
+    }
+
+    encabezado.alignment = {
+
+        vertical: "middle",
+
+        horizontal: "center"
+
+    };
+
+    encabezado.height = 25;
+
+    for (
+        let i = 0;
+        i < vehiculos.length;
+        i++
+    ) {
+
+        const v =
+            vehiculos[i];
+
+        let calle = "";
+        let fila = "";
+        let ubicacion = "";
+
+        if (esPlayaEspecial(v.playa)) {
+
+            const p =
+                parsearPosicionEspecial(
+                    v.posicion
+                );
+
+            if (p) {
+
+                calle =
+                    String(p.calle);
+
+                fila =
+                    String(p.fila);
+
+                ubicacion =
+                    `${v.playa} - ${v.bloque} - ${p.calle} - ${p.fila}`;
+
+            } else {
+
+                ubicacion =
+                    `${v.playa} - ${v.bloque} - ${String(v.posicion)}`;
+
+            }
+
+        } else {
+
+            const p =
+                obtenerUbicacionNormal(
+                    v.posicion
+                );
+
+            if (p) {
+
+                calle =
+                    String(p.carril);
+
+                fila =
+                    String(p.posicion);
+
+                ubicacion =
+                    `${v.playa} - ${v.bloque} - ${p.carril}`;
+
+            } else {
+
+                ubicacion =
+                    `${v.playa} - ${v.bloque} - ${String(v.posicion)}`;
+
+            }
+
+        }
+
+        const filaExcel =
+            worksheet.addRow({
+
+                chasis:
+                    String(v.chasis),
+
+                playa:
+                    String(v.playa),
+
+                bloque:
+                    String(v.bloque),
+
+                calle:
+                    String(calle),
+
+                fila:
+                    String(fila),
+
+                ubicacion:
+                    ubicacion
+
+            });
+
+        for (
+            let c = 1;
+            c <= 6;
+            c++
+        ) {
+
+            filaExcel
+                .getCell(c)
+                .numFmt = "@";
+
+        }
+
+        filaExcel.height = 15;
+
+        filaExcel.alignment = {
+
+            vertical:
+                "middle",
+
+            horizontal:
+                "center"
+
+        };
+
+    }
+
+    worksheet.autoFilter = {
+
+        from:
+            "A1",
+
+        to:
+            "F" +
+            (vehiculos.length + 1)
+
+    };
+
+    worksheet.views = [
+
+        {
+
+            state:
+                "frozen",
+
+            ySplit:
+                1
+
+        }
+
+    ];
+
+    return await workbook.xlsx.writeBuffer();
+
+}
+
+async function exportarCSV() {
+
+    if (vehiculos.length === 0) {
 
         mostrarAlerta(
-            "Este navegador no admite compartir."
+            "No hay vehiculos registrados para exportar."
         );
 
         return;
@@ -359,28 +577,182 @@ async function exportarCSV() {
 
     try {
 
-        await navigator.share({
-            files: [archivo]
-        });
+        const buffer =
+            await crearExcelBuffer();
+
+        const blob =
+            new Blob(
+                [buffer],
+                {
+
+                    type:
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+
+                }
+            );
+
+        const url =
+            URL.createObjectURL(
+                blob
+            );
+
+        const enlace =
+            document.createElement(
+                "a"
+            );
+
+        enlace.href =
+            url;
+
+        enlace.download =
+            "vehiculos_playa.xlsx";
+
+        document
+            .body
+            .appendChild(
+                enlace
+            );
+
+        enlace.click();
+
+        document
+            .body
+            .removeChild(
+                enlace
+            );
+
+        URL.revokeObjectURL(
+            url
+        );
 
     } catch (error) {
 
-        console.error("Error real:", error);
+        console.error(
+            "Error al generar Excel:",
+            error
+        );
 
-        if (
-            error.name !== "AbortError"
-        ) {
-
-            mostrarAlerta(
-                "Error al compartir: " +
-                error.name
-            );
-
-        }
+        mostrarAlerta(
+            "No se pudo generar el archivo Excel."
+        );
 
     }
 
 }
+
+async function compartirExcel() {
+
+    if (vehiculos.length === 0) {
+
+        mostrarAlerta(
+            "No hay vehiculos registrados para compartir."
+        );
+
+        return;
+
+    }
+
+    try {
+
+        if (!navigator.share) {
+
+            mostrarAlerta(
+                "Este navegador no dispone de la funcion nativa de compartir."
+            );
+
+            return;
+
+        }
+
+        const buffer =
+            await crearExcelBuffer();
+
+        const zip =
+            new JSZip();
+
+        zip.file(
+            "vehiculos_playa.xlsx",
+            buffer
+        );
+
+        const zipBlob =
+            await zip.generateAsync(
+                {
+                    type:
+                        "blob",
+                    compression:
+                        "DEFLATE"
+                }
+            );
+
+        const archivo =
+            new File(
+                [zipBlob],
+                "vehiculos_playa.zip",
+                {
+                    type:
+                        "application/zip"
+                }
+            );
+
+        if (
+            navigator.canShare &&
+            !navigator.canShare(
+                {
+                    files:
+                        [archivo]
+                }
+            )
+        ) {
+
+            mostrarAlerta(
+                "Este navegador no admite compartir este archivo ZIP."
+            );
+
+            return;
+
+        }
+
+        await navigator.share(
+            {
+                title:
+                    "Vehiculos de playa",
+
+                text:
+                    "Archivo Excel comprimido.",
+
+                files:
+                    [archivo]
+            }
+        );
+
+    } catch (error) {
+
+        console.error(
+            "Error al compartir archivo:",
+            error
+        );
+
+        if (
+            error &&
+            error.name === "AbortError"
+        ) {
+            return;
+        }
+
+        mostrarAlerta(
+            "Error al compartir: " +
+            (
+                error && error.name
+                    ? error.name
+                    : "desconocido"
+            )
+        );
+
+    }
+
+}
+
 function escapeHTML(text) {
 
     return String(text)

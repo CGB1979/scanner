@@ -115,7 +115,19 @@
 </div>
 </div>
 <div class="fixed-bottom-actions">
-<div class="top-buttons"><!-- EDITABLE: texto del boton -->         <button class="btn-success" onclick="exportarCSV()">             Probar compartir TXT         </button>          <!-- EDITABLE: texto del boton -->         <button class="btn-danger" onclick="confirmarBorrarTodo()">             Borrar todo         </button></div>
+<div class="top-buttons">
+    <button class="btn-success" onclick="exportarCSV()">
+        Exportar
+    </button>
+
+    <button class="btn-primary" onclick="compartirExcel()">
+        Compartir
+    </button>
+
+    <button class="btn-danger" onclick="confirmarBorrarTodo()">
+        Borrar
+    </button>
+</div>
 </div>
 </div>
 </div>
@@ -243,6 +255,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bwip-js@4.7.0/dist/bwip-js-min.js"></script>
 <script src="https://unpkg.com/html5-qrcode"></script>
 <script src="js/configuracion.js"></script>
