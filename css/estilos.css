@@ -499,14 +499,8 @@ button:disabled {
 
 .top-buttons {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
-}
-
-.top-buttons button {
-    min-height: 38px;
-    padding: 8px 6px;
-    font-size: 14px;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
 }
 
 #scannerModal {
@@ -853,14 +847,8 @@ button:disabled {
 
     .top-buttons {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
-}
-
-.top-buttons button {
-    min-height: 38px;
-    padding: 8px 6px;
-    font-size: 14px;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
 }
 
 /* =========================================
@@ -885,7 +873,7 @@ button:disabled {
     width: 100%;
     max-width: 720px;
     background: #5f9a3d !important;
-    padding: 6px 12px 7px;
+    padding: 10px 16px 12px;
     border-top: 2px solid #d9dee3;
     box-shadow: 0 -3px 12px rgba(0,0,0,.10);
     z-index: 900;

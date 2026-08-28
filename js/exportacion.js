@@ -331,7 +331,17 @@ function guardarDatos() {
 
 }
 
-async function generarExcelBlob() {
+async function exportarCSV() {
+
+    if (vehiculos.length === 0) {
+
+        mostrarAlerta(
+            "No hay vehiculos registrados para exportar."
+        );
+
+        return;
+    }
+
     try {
 
         const workbook =
@@ -622,7 +632,48 @@ async function generarExcelBlob() {
 
                 }
             );
-        return blob;
+
+
+        const url =
+            URL.createObjectURL(
+                blob
+            );
+
+
+        const enlace =
+            document.createElement(
+                "a"
+            );
+
+
+        enlace.href =
+            url;
+
+
+        enlace.download =
+            "vehiculos_playa.xlsx";
+
+
+        document
+            .body
+            .appendChild(
+                enlace
+            );
+
+
+        enlace.click();
+
+
+        document
+            .body
+            .removeChild(
+                enlace
+            );
+
+
+        URL.revokeObjectURL(
+            url
+        );
 
 
     } catch (error) {
@@ -634,281 +685,6 @@ async function generarExcelBlob() {
 
         mostrarAlerta(
             "No se pudo generar el archivo Excel."
-        );
-
-    }
-
-}
-
-
-let archivoCompartirPendiente = null;
-
-async function exportarCSV() {
-
-    if (vehiculos.length === 0) {
-
-        mostrarAlerta(
-            "No hay vehiculos registrados para exportar."
-        );
-
-        return;
-
-    }
-
-    const blob = await generarExcelBlob();
-
-    if (!blob) {
-        return;
-    }
-
-    const url =
-        URL.createObjectURL(
-            blob
-        );
-
-    const enlace =
-        document.createElement(
-            "a"
-        );
-
-    enlace.href = url;
-    enlace.download = "vehiculos_playa.xlsx";
-
-    document
-        .body
-        .appendChild(
-            enlace
-        );
-
-    enlace.click();
-
-    document
-        .body
-        .removeChild(
-            enlace
-        );
-
-    setTimeout(
-        function() {
-            URL.revokeObjectURL(url);
-        },
-        1000
-    );
-
-}
-
-async function prepararCompartirExcel() {
-
-    if (vehiculos.length === 0) {
-
-        mostrarAlerta(
-            "No hay vehiculos registrados para compartir."
-        );
-
-        return;
-
-    }
-
-    const boton =
-        document.getElementById(
-            "btnCompartirExcel"
-        );
-
-    const textoOriginal =
-        boton
-            ? boton.textContent
-            : "";
-
-    if (boton) {
-
-        boton.disabled = true;
-
-        boton.textContent =
-            "Preparando...";
-
-    }
-
-    try {
-
-        const excelBlob =
-            await generarExcelBlob();
-
-        if (!excelBlob) {
-            return;
-        }
-
-        if (typeof JSZip === "undefined") {
-
-            mostrarAlerta(
-                "No se pudo cargar la herramienta de compresion."
-            );
-
-            return;
-
-        }
-
-        const zip =
-            new JSZip();
-
-        zip.file(
-            "vehiculos_playa.xlsx",
-            excelBlob
-        );
-
-        const zipBlob =
-            await zip.generateAsync(
-                {
-                    type: "blob",
-                    compression: "DEFLATE"
-                }
-            );
-
-        archivoCompartirPendiente =
-            new File(
-                [zipBlob],
-                "vehiculos_playa.xlsx.zip",
-                {
-                    type:
-                        "application/zip"
-                }
-            );
-
-        document
-            .getElementById(
-                "archivoCompartirNombre"
-            )
-            .textContent =
-            archivoCompartirPendiente.name;
-
-        document
-            .getElementById(
-                "shareReadyModal"
-            )
-            .classList
-            .remove("hidden");
-
-    } catch (error) {
-
-        console.error(
-            "Error al preparar archivo para compartir:",
-            error
-        );
-
-        mostrarAlerta(
-            "No se pudo preparar el archivo para compartir."
-        );
-
-    } finally {
-
-        if (boton) {
-
-            boton.disabled = false;
-
-            boton.textContent =
-                textoOriginal;
-
-        }
-
-    }
-
-}
-
-function cerrarCompartirPreparado() {
-
-    document
-        .getElementById(
-            "shareReadyModal"
-        )
-        .classList
-        .add("hidden");
-
-}
-
-async function compartirArchivoPreparado() {
-
-    if (!archivoCompartirPendiente) {
-
-        mostrarAlerta(
-            "No hay ningun archivo listo para compartir."
-        );
-
-        return;
-
-    }
-
-    if (!navigator.share) {
-
-        mostrarAlerta(
-            "Este navegador no dispone de la funcion nativa de compartir."
-        );
-
-        return;
-
-    }
-
-    try {
-
-        if (
-            navigator.canShare &&
-            !navigator.canShare(
-                {
-                    files:
-                        [
-                            archivoCompartirPendiente
-                        ]
-                }
-            )
-        ) {
-
-            mostrarAlerta(
-                "Este navegador no admite compartir este archivo."
-            );
-
-            return;
-
-        }
-
-        await navigator.share(
-            {
-                title:
-                    "Vehiculos de playa",
-
-                text:
-                    "Archivo de vehiculos de playa",
-
-                files:
-                    [
-                        archivoCompartirPendiente
-                    ]
-            }
-        );
-
-        cerrarCompartirPreparado();
-
-        archivoCompartirPendiente =
-            null;
-
-    } catch (error) {
-
-        console.error(
-            "Error al compartir archivo:",
-            error
-        );
-
-        if (
-            error &&
-            error.name === "AbortError"
-        ) {
-            return;
-        }
-
-        mostrarAlerta(
-            "Error al compartir: " +
-            (
-                error && error.name
-                    ? error.name
-                    : "desconocido"
-            )
         );
 
     }
