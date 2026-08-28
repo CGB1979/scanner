@@ -115,7 +115,7 @@
 </div>
 </div>
 <div class="fixed-bottom-actions">
-<div class="top-buttons"><!-- EDITABLE: texto del boton -->         <button class="btn-success" onclick="exportarCSV()">             Exportar Excel         </button>          <!-- EDITABLE: texto del boton -->         <button class="btn-danger" onclick="confirmarBorrarTodo()">             Borrar todo         </button></div>
+<div class="top-buttons"><!-- EDITABLE: texto del boton -->         <button class="btn-success" onclick="exportarCSV()">             Probar compartir TXT         </button>          <!-- EDITABLE: texto del boton -->         <button class="btn-danger" onclick="confirmarBorrarTodo()">             Borrar todo         </button></div>
 </div>
 </div>
 </div>
@@ -263,37 +263,5 @@ if ('serviceWorker' in navigator) {
   });
 }
 </script>
-
-<!-- Modal: generando Excel -->
-<div id="excelLoadingModal" class="excel-modal hidden">
-    <div class="excel-modal-box excel-loading-box">
-        <div class="excel-spinner"></div>
-        <h2>Generando archivo Excel...</h2>
-        <p>Por favor espera.</p>
-    </div>
-</div>
-
-<!-- Modal: opciones de exportación -->
-<div id="excelExportModal" class="excel-modal hidden">
-    <div class="excel-modal-box">
-        <h2>Archivo Excel listo</h2>
-        <p>¿Qué deseas hacer con el archivo?</p>
-
-        <div class="excel-modal-actions">
-            <button class="btn-success" type="button" onclick="guardarExcelTemporal()">
-                Guardar como Excel
-            </button>
-
-            <button class="btn-primary excel-share-button" type="button" onclick="compartirExcelTemporal()">
-                Compartir
-            </button>
-
-            <button class="btn-danger" type="button" onclick="cerrarModalExportacion()">
-                Cancelar
-            </button>
-        </div>
-    </div>
-</div>
-
 </body>
 </html>
