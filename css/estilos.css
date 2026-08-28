@@ -947,3 +947,41 @@ button:disabled {
 
 /* Modal reutilizable para reemplazar cuadros nativos del navegador */
 .modal-buttons.app-dialog-one-button { grid-template-columns: 1fr; }
+
+
+/* Modal de exportacion */
+.export-modal-content {
+    position: relative;
+}
+
+.modal-close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 38px;
+    height: 38px;
+    padding: 0;
+    border-radius: 50%;
+    background: #eef1f3;
+    color: #495057;
+    font-size: 28px;
+    font-weight: 400;
+    line-height: 1;
+}
+
+.export-modal-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 18px;
+}
+
+.export-modal-buttons button {
+    min-height: 54px;
+}
+
+@media (max-width: 480px) {
+    .export-modal-buttons {
+        grid-template-columns: 1fr;
+    }
+}

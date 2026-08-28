@@ -115,7 +115,7 @@
 </div>
 </div>
 <div class="fixed-bottom-actions">
-<div class="top-buttons"><!-- EDITABLE: texto del boton -->         <button class="btn-success" onclick="exportarCSV()">             Exportar Excel         </button>          <!-- EDITABLE: texto del boton -->         <button class="btn-danger" onclick="confirmarBorrarTodo()">             Borrar todo         </button></div>
+<div class="top-buttons"><!-- EDITABLE: texto del boton -->         <button class="btn-success" onclick="abrirModalExportar()">             Exportar Excel         </button>          <!-- EDITABLE: texto del boton -->         <button class="btn-danger" onclick="confirmarBorrarTodo()">             Borrar todo         </button></div>
 </div>
 </div>
 </div>
@@ -223,6 +223,26 @@
 <div id="confirmMensaje">&nbsp;</div>
 <div class="modal-buttons"><!-- EDITABLE: texto del boton --> <button class="btn-secondary" onclick="cerrarConfirmacion()"> Cancelar </button>  <!-- EDITABLE: texto del boton --> <button id="confirmAceptar" class="btn-danger"> Confirmar </button></div>
 </div>
+</div>
+
+
+<!-- MODAL EXPORTAR EXCEL -->
+<div id="exportModal" class="modal hidden">
+  <div class="modal-content export-modal-content">
+    <button type="button" class="modal-close" onclick="cerrarModalExportar()" aria-label="Cerrar">×</button>
+    <h2>Exportar Excel</h2>
+    <p class="modal-description">
+      Elija si desea guardar el archivo Excel en este dispositivo o compartirlo con otra aplicacion.
+    </p>
+    <div class="export-modal-buttons">
+      <button type="button" class="btn-success" onclick="guardarExcel()">
+        Guardar como Excel
+      </button>
+      <button type="button" class="btn-primary" onclick="compartirExcel()">
+        Compartir
+      </button>
+    </div>
+  </div>
 </div>
 
 <!-- MODAL REUTILIZABLE PARA MENSAJES Y PROMPTS -->

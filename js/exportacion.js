@@ -331,7 +331,9 @@ function guardarDatos() {
 
 }
 
-async function exportarCSV() {
+
+
+function abrirModalExportar() {
 
     if (vehiculos.length === 0) {
 
@@ -341,6 +343,148 @@ async function exportarCSV() {
 
         return;
     }
+
+    document
+        .getElementById("exportModal")
+        .classList
+        .remove("hidden");
+
+}
+
+function cerrarModalExportar() {
+
+    document
+        .getElementById("exportModal")
+        .classList
+        .add("hidden");
+
+}
+
+async function obtenerArchivoExcel() {
+
+    const blob =
+        await generarExcelBlob();
+
+    return new File(
+        [blob],
+        "vehiculos_playa.xlsx",
+        {
+            type:
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        }
+    );
+
+}
+
+async function guardarExcel() {
+
+    try {
+
+        const archivo =
+            await obtenerArchivoExcel();
+
+        const url =
+            URL.createObjectURL(
+                archivo
+            );
+
+        const enlace =
+            document.createElement(
+                "a"
+            );
+
+        enlace.href =
+            url;
+
+        enlace.download =
+            archivo.name;
+
+        document
+            .body
+            .appendChild(
+                enlace
+            );
+
+        enlace.click();
+
+        document
+            .body
+            .removeChild(
+                enlace
+            );
+
+        URL.revokeObjectURL(
+            url
+        );
+
+        cerrarModalExportar();
+
+    } catch (error) {
+
+        console.error(
+            "Error al guardar Excel:",
+            error
+        );
+
+        mostrarAlerta(
+            "No se pudo generar el archivo Excel."
+        );
+
+    }
+
+}
+
+async function compartirExcel() {
+
+    try {
+
+        const archivo =
+            await obtenerArchivoExcel();
+
+        if (
+            navigator.share &&
+            navigator.canShare &&
+            navigator.canShare({
+                files: [archivo]
+            })
+        ) {
+
+            await navigator.share({
+                title: "Vehiculos de playa",
+                text: "Archivo Excel de vehiculos.",
+                files: [archivo]
+            });
+
+            cerrarModalExportar();
+
+            return;
+
+        }
+
+        mostrarAlerta(
+            "Este dispositivo o navegador no permite compartir archivos directamente. Puede usar Guardar como Excel."
+        );
+
+    } catch (error) {
+
+        if (error && error.name === "AbortError") {
+            return;
+        }
+
+        console.error(
+            "Error al compartir Excel:",
+            error
+        );
+
+        mostrarAlerta(
+            "No se pudo compartir el archivo Excel."
+        );
+
+    }
+
+}
+
+async function generarExcelBlob() {
 
     try {
 
@@ -634,47 +778,7 @@ async function exportarCSV() {
             );
 
 
-        const url =
-            URL.createObjectURL(
-                blob
-            );
-
-
-        const enlace =
-            document.createElement(
-                "a"
-            );
-
-
-        enlace.href =
-            url;
-
-
-        enlace.download =
-            "vehiculos_playa.xlsx";
-
-
-        document
-            .body
-            .appendChild(
-                enlace
-            );
-
-
-        enlace.click();
-
-
-        document
-            .body
-            .removeChild(
-                enlace
-            );
-
-
-        URL.revokeObjectURL(
-            url
-        );
-
+        return blob;
 
     } catch (error) {
 
@@ -683,9 +787,7 @@ async function exportarCSV() {
             error
         );
 
-        mostrarAlerta(
-            "No se pudo generar el archivo Excel."
-        );
+        throw error;
 
     }
 
