@@ -949,43 +949,71 @@ button:disabled {
 .modal-buttons.app-dialog-one-button { grid-template-columns: 1fr; }
 
 
-/* =========================================
-   EXPORTAR EXCEL: CARGA Y OPCIONES
-========================================= */
+/* Modal de exportación y carga de Excel */
+.excel-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.55);
+}
 
-.export-loading-content {
+.excel-modal.hidden {
+    display: none;
+}
+
+.excel-modal-box {
+    width: min(100%, 420px);
+    padding: 24px;
+    border-radius: 16px;
+    background: #ffffff;
     text-align: center;
-    max-width: 360px;
+    box-sizing: border-box;
 }
 
-.export-spinner {
-    width: 52px;
-    height: 52px;
-    margin: 5px auto 18px;
-    border: 5px solid #e3efe0;
-    border-top-color: #70ad47;
-    border-radius: 50%;
-    animation: exportSpin .8s linear infinite;
+.excel-modal-box h2 {
+    margin: 0 0 12px;
 }
 
-@keyframes exportSpin {
-    to {
-        transform: rotate(360deg);
-    }
+.excel-modal-box p {
+    margin: 0 0 20px;
 }
 
-.export-action-buttons {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-    margin-top: 15px;
+.excel-modal-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
 }
 
-.export-action-buttons button,
-.export-cancel-button {
+.excel-modal-actions button {
     width: 100%;
 }
 
-.export-cancel-button {
-    margin-top: 10px;
+.excel-share-button {
+    background: #1976d2;
+    color: #ffffff;
+}
+
+.excel-loading-box {
+    padding-top: 30px;
+    padding-bottom: 30px;
+}
+
+.excel-spinner {
+    width: 42px;
+    height: 42px;
+    margin: 0 auto 18px;
+    border: 5px solid #dddddd;
+    border-top-color: #1976d2;
+    border-radius: 50%;
+    animation: excel-spin 0.8s linear infinite;
+}
+
+@keyframes excel-spin {
+    to {
+        transform: rotate(360deg);
+    }
 }

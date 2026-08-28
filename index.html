@@ -225,50 +225,6 @@
 </div>
 </div>
 
-<!-- MODAL: GENERANDO ARCHIVO EXCEL -->
-<div id="exportarExcelCargaModal" class="modal hidden">
-  <div class="modal-content export-loading-content">
-    <div class="export-spinner" aria-hidden="true"></div>
-    <h2>Generando archivo Excel</h2>
-    <p class="modal-description">
-      Preparando el archivo. Por favor espera...
-    </p>
-  </div>
-</div>
-
-<!-- MODAL: OPCIONES DE EXPORTACION -->
-<div id="exportarExcelModal" class="modal hidden">
-  <div class="modal-content">
-    <h2>Archivo Excel listo</h2>
-    <p class="modal-description">
-      Elige que deseas hacer con el archivo.
-    </p>
-
-    <div class="export-action-buttons">
-      <button
-        type="button"
-        class="btn-success"
-        onclick="guardarExcelTemporal()">
-        Guardar como Excel
-      </button>
-
-      <button
-        type="button"
-        class="btn-primary"
-        onclick="compartirExcelTemporal()">
-        Compartir
-      </button>
-    </div>
-
-    <button
-      type="button"
-      class="btn-secondary export-cancel-button"
-      onclick="cerrarExportarExcelModal()">
-      Cancelar
-    </button>
-  </div>
-</div>
-
 <!-- MODAL REUTILIZABLE PARA MENSAJES Y PROMPTS -->
 <div id="appDialogModal" class="modal hidden">
   <div class="modal-content">
@@ -307,5 +263,37 @@ if ('serviceWorker' in navigator) {
   });
 }
 </script>
+
+<!-- Modal: generando Excel -->
+<div id="excelLoadingModal" class="excel-modal hidden">
+    <div class="excel-modal-box excel-loading-box">
+        <div class="excel-spinner"></div>
+        <h2>Generando archivo Excel...</h2>
+        <p>Por favor espera.</p>
+    </div>
+</div>
+
+<!-- Modal: opciones de exportación -->
+<div id="excelExportModal" class="excel-modal hidden">
+    <div class="excel-modal-box">
+        <h2>Archivo Excel listo</h2>
+        <p>¿Qué deseas hacer con el archivo?</p>
+
+        <div class="excel-modal-actions">
+            <button class="btn-success" type="button" onclick="guardarExcelTemporal()">
+                Guardar como Excel
+            </button>
+
+            <button class="btn-primary excel-share-button" type="button" onclick="compartirExcelTemporal()">
+                Compartir
+            </button>
+
+            <button class="btn-danger" type="button" onclick="cerrarModalExportacion()">
+                Cancelar
+            </button>
+        </div>
+    </div>
+</div>
+
 </body>
 </html>

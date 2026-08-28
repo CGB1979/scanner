@@ -334,447 +334,257 @@ function guardarDatos() {
 let archivoExcelTemporal = null;
 let nombreArchivoExcelTemporal = "vehiculos_playa.xlsx";
 
-function exportarCSV() {
+async function exportarCSV() {
 
     if (vehiculos.length === 0) {
-
-        mostrarAlerta(
-            "No hay vehiculos registrados para exportar."
-        );
-
+        mostrarAlerta("No hay vehiculos registrados para exportar.");
         return;
-
     }
 
-    mostrarCargaExportacion();
+    try {
 
-    /*
-     * Dejamos que el modal de carga se pinte antes
-     * de iniciar la generacion del Excel.
-     */
-    setTimeout(
-        async function() {
+        mostrarCargandoExcel();
 
-            try {
+        // Permitimos que el modal de carga se pinte antes del trabajo pesado.
+        await new Promise(resolve => setTimeout(resolve, 50));
 
-                archivoExcelTemporal =
-                    await generarArchivoExcelTemporal();
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet("Vehiculos");
 
-                ocultarCargaExportacion();
+        worksheet.columns = [
+            { header: "Numero de chasis", key: "chasis", width: 25 },
+            { header: "Playa", key: "playa", width: 15 },
+            { header: "Bloque", key: "bloque", width: 15 },
+            { header: "Carril", key: "calle", width: 15 },
+            { header: "Posicion", key: "fila", width: 15 },
+            { header: "Ubicacion", key: "ubicacion", width: 18 }
+        ];
 
-                document
-                    .getElementById("exportarExcelModal")
-                    .classList
-                    .remove("hidden");
+        const encabezado = worksheet.getRow(1);
 
-            } catch (error) {
-
-                console.error(
-                    "Error al generar Excel:",
-                    error
-                );
-
-                ocultarCargaExportacion();
-
-                mostrarAlerta(
-                    "No se pudo generar el archivo Excel."
-                );
-
-            }
-
-        },
-        50
-    );
-
-}
-
-async function generarArchivoExcelTemporal() {
-
-    const workbook =
-        new ExcelJS.Workbook();
-
-    const worksheet =
-        workbook.addWorksheet(
-            "Vehiculos"
-        );
-
-    worksheet.columns = [
-
-        {
-            header: "Numero de chasis",
-            key: "chasis",
-            width: 25
-        },
-
-        {
-            header: "Playa",
-            key: "playa",
-            width: 15
-        },
-
-        {
-            header: "Bloque",
-            key: "bloque",
-            width: 15
-        },
-
-        {
-            header: "Carril",
-            key: "calle",
-            width: 15
-        },
-
-        {
-            header: "Posicion",
-            key: "fila",
-            width: 15
-        },
-
-        {
-            header: "Ubicacion",
-            key: "ubicacion",
-            width: 18
-        }
-
-    ];
-
-    const encabezado =
-        worksheet.getRow(1);
-
-    encabezado.font = {
-
-        bold: true,
-
-        color: {
-            argb: "FFFFFFFF"
-        }
-
-    };
-
-    for (let c = 1; c <= 6; c++) {
-
-        encabezado.getCell(c).fill = {
-            type: "pattern",
-            pattern: "solid",
-            fgColor: {
-                argb: "70AD47"
-            }
+        encabezado.font = {
+            bold: true,
+            color: { argb: "FFFFFFFF" }
         };
 
-    }
-
-    encabezado.alignment = {
-
-        vertical: "middle",
-
-        horizontal: "center"
-
-    };
-
-    encabezado.height = 25;
-
-    for (
-        let i = 0;
-        i < vehiculos.length;
-        i++
-    ) {
-
-        const v =
-            vehiculos[i];
-
-        let calle = "";
-        let fila = "";
-        let ubicacion = "";
-
-        if (esPlayaEspecial(v.playa)) {
-
-            const p =
-                parsearPosicionEspecial(
-                    v.posicion
-                );
-
-            if (p) {
-
-                calle = String(p.calle);
-                fila = String(p.fila);
-
-                ubicacion =
-                    `${v.playa} - ${v.bloque} - ${p.calle} - ${p.fila}`;
-
-            } else {
-
-                ubicacion =
-                    `${v.playa} - ${v.bloque} - ${String(v.posicion)}`;
-
-            }
-
-        } else {
-
-            const p =
-                obtenerUbicacionNormal(
-                    v.posicion
-                );
-
-            if (p) {
-
-                calle = String(p.carril);
-                fila = String(p.posicion);
-
-                ubicacion =
-                    `${v.playa} - ${v.bloque} - ${p.carril}`;
-
-            } else {
-
-                ubicacion =
-                    `${v.playa} - ${v.bloque} - ${String(v.posicion)}`;
-
-            }
-
+        for (let c = 1; c <= 6; c++) {
+            encabezado.getCell(c).fill = {
+                type: "pattern",
+                pattern: "solid",
+                fgColor: { argb: "70AD47" }
+            };
         }
 
-        const filaExcel =
-            worksheet.addRow({
+        encabezado.alignment = {
+            vertical: "middle",
+            horizontal: "center"
+        };
 
-                chasis:
-                    String(v.chasis),
+        encabezado.height = 25;
 
-                playa:
-                    String(v.playa),
+        for (let i = 0; i < vehiculos.length; i++) {
 
-                bloque:
-                    String(v.bloque),
+            const v = vehiculos[i];
 
-                calle:
-                    String(calle),
+            let calle = "";
+            let fila = "";
+            let ubicacion = "";
 
-                fila:
-                    String(fila),
+            if (esPlayaEspecial(v.playa)) {
 
-                ubicacion:
-                    ubicacion
+                const p = parsearPosicionEspecial(v.posicion);
 
+                if (p) {
+                    calle = String(p.calle);
+                    fila = String(p.fila);
+                    ubicacion = `${v.playa} - ${v.bloque} - ${p.calle} - ${p.fila}`;
+                } else {
+                    ubicacion = `${v.playa} - ${v.bloque} - ${String(v.posicion)}`;
+                }
+
+            } else {
+
+                const p = obtenerUbicacionNormal(v.posicion);
+
+                if (p) {
+                    calle = String(p.carril);
+                    fila = String(p.posicion);
+                    ubicacion = `${v.playa} - ${v.bloque} - ${p.carril}`;
+                } else {
+                    ubicacion = `${v.playa} - ${v.bloque} - ${String(v.posicion)}`;
+                }
+
+            }
+
+            const filaExcel = worksheet.addRow({
+                chasis: String(v.chasis),
+                playa: String(v.playa),
+                bloque: String(v.bloque),
+                calle: String(calle),
+                fila: String(fila),
+                ubicacion: ubicacion
             });
 
-        for (
-            let c = 1;
-            c <= 6;
-            c++
-        ) {
+            for (let c = 1; c <= 6; c++) {
+                filaExcel.getCell(c).numFmt = "@";
+            }
 
-            filaExcel
-                .getCell(c)
-                .numFmt = "@";
+            filaExcel.height = 15;
 
+            filaExcel.alignment = {
+                vertical: "middle",
+                horizontal: "center"
+            };
         }
 
-        filaExcel.height = 15;
-
-        filaExcel.alignment = {
-
-            vertical:
-                "middle",
-
-            horizontal:
-                "center"
-
+        worksheet.autoFilter = {
+            from: "A1",
+            to: "F" + (vehiculos.length + 1)
         };
 
+        worksheet.views = [{
+            state: "frozen",
+            ySplit: 1
+        }];
+
+        const buffer = await workbook.xlsx.writeBuffer();
+
+        // Este File es el archivo temporal único.
+        // Se crea UNA vez y se reutiliza tanto para guardar como para compartir.
+        archivoExcelTemporal = new File(
+            [buffer],
+            nombreArchivoExcelTemporal,
+            {
+                type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                lastModified: Date.now()
+            }
+        );
+
+        cerrarCargandoExcel();
+        abrirModalExportacion();
+
+    } catch (error) {
+
+        console.error("Error al generar Excel:", error);
+
+        cerrarCargandoExcel();
+
+        archivoExcelTemporal = null;
+
+        mostrarAlerta("No se pudo generar el archivo Excel.");
     }
-
-    worksheet.autoFilter = {
-
-        from:
-            "A1",
-
-        to:
-            "F" +
-            (vehiculos.length + 1)
-
-    };
-
-    worksheet.views = [
-
-        {
-
-            state:
-                "frozen",
-
-            ySplit:
-                1
-
-        }
-
-    ];
-
-    const buffer =
-        await workbook.xlsx.writeBuffer();
-
-    return new File(
-        [buffer],
-        nombreArchivoExcelTemporal,
-        {
-
-            type:
-                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-
-        }
-    );
-
 }
 
-function mostrarCargaExportacion() {
-
-    document
-        .getElementById("exportarExcelCargaModal")
-        .classList
-        .remove("hidden");
-
+function mostrarCargandoExcel() {
+    const modal = document.getElementById("excelLoadingModal");
+    if (modal) modal.classList.remove("hidden");
 }
 
-function ocultarCargaExportacion() {
+function cerrarCargandoExcel() {
+    const modal = document.getElementById("excelLoadingModal");
+    if (modal) modal.classList.add("hidden");
+}
 
-    document
-        .getElementById("exportarExcelCargaModal")
-        .classList
-        .add("hidden");
+function abrirModalExportacion() {
+    const modal = document.getElementById("excelExportModal");
+    if (modal) modal.classList.remove("hidden");
+}
 
+function cerrarModalExportacion() {
+    const modal = document.getElementById("excelExportModal");
+    if (modal) modal.classList.add("hidden");
 }
 
 function guardarExcelTemporal() {
 
     if (!archivoExcelTemporal) {
-
-        mostrarAlerta(
-            "El archivo Excel todavia no esta disponible."
-        );
-
+        mostrarAlerta("El archivo Excel ya no está disponible. Generalo nuevamente.");
         return;
-
     }
 
-    const url =
-        URL.createObjectURL(
-            archivoExcelTemporal
-        );
-
-    const enlace =
-        document.createElement("a");
+    const url = URL.createObjectURL(archivoExcelTemporal);
+    const enlace = document.createElement("a");
 
     enlace.href = url;
+    enlace.download = archivoExcelTemporal.name;
 
-    enlace.download =
-        nombreArchivoExcelTemporal;
-
-    document
-        .body
-        .appendChild(enlace);
-
+    document.body.appendChild(enlace);
     enlace.click();
+    enlace.remove();
 
-    document
-        .body
-        .removeChild(enlace);
+    setTimeout(function() {
+        URL.revokeObjectURL(url);
+    }, 1000);
 
-    setTimeout(
-        function() {
-
-            URL.revokeObjectURL(url);
-
-        },
-        1000
-    );
-
+    cerrarModalExportacion();
 }
 
 async function compartirExcelTemporal() {
 
     if (!archivoExcelTemporal) {
-
-        mostrarAlerta(
-            "El archivo Excel todavia no esta disponible."
-        );
-
+        mostrarAlerta("El archivo Excel ya no está disponible. Generalo nuevamente.");
         return;
-
     }
 
-    const datosCompartir = {
+    // IMPORTANTE: esta función se llama directamente desde el botón del modal,
+    // conservando la activación del usuario requerida por Android/Web Share.
+    const files = [archivoExcelTemporal];
 
-        title:
-            "Vehiculos Playa",
-
-        text:
-            "Archivo Excel con los vehiculos registrados.",
-
-        files:
-            [
-                archivoExcelTemporal
-            ]
-
-    };
-
-    if (
-        !navigator.share ||
-        !navigator.canShare ||
-        !navigator.canShare(datosCompartir)
-    ) {
-
-        mostrarAlerta(
-            "Este dispositivo o navegador no permite compartir archivos Excel. Puedes usar la opcion Guardar como Excel."
-        );
-
+    if (!navigator.share) {
+        mostrarAlerta("Este navegador no admite el menú nativo de compartir.");
         return;
+    }
 
+    // canShare se prueba únicamente con 'files', como recomienda MDN.
+    if (navigator.canShare && !navigator.canShare({ files: files })) {
+        mostrarAlerta(
+            "Este navegador admite compartir, pero no permite compartir este archivo Excel (.xlsx)."
+        );
+        return;
     }
 
     try {
 
-        await navigator.share(
-            datosCompartir
-        );
+        await navigator.share({
+            files: files,
+            title: "Vehículos Playa",
+            text: "Archivo Excel de vehículos"
+        });
+
+        // En Android la promesa se resuelve después de entregar los datos
+        // al destino de compartición.
+        cerrarModalExportacion();
+
+        // Ya no necesitamos conservar el archivo temporal.
+        archivoExcelTemporal = null;
 
     } catch (error) {
 
-        /*
-         * AbortError significa que el usuario cerro
-         * el menu de compartir. No es un error real.
-         */
-        if (
-            error &&
-            error.name === "AbortError"
-        ) {
-
+        // Cancelar el selector nativo NO es un error de la aplicación.
+        if (error && error.name === "AbortError") {
             return;
-
         }
 
-        console.error(
-            "Error al compartir Excel:",
-            error
-        );
+        console.error("Error al compartir Excel:", error);
 
-        mostrarAlerta(
-            "No se pudo compartir el archivo Excel."
-        );
+        let mensaje = "No se pudo abrir el menú de compartir.";
 
+        if (error && error.name === "NotAllowedError") {
+            mensaje =
+                "Android o el navegador bloqueó la acción de compartir. " +
+                "Volvé a tocar Compartir e intentá nuevamente.";
+        } else if (error && error.name === "TypeError") {
+            mensaje =
+                "Este navegador no admite compartir este archivo Excel.";
+        } else if (error && error.name === "DataError") {
+            mensaje =
+                "Se abrió el sistema de compartir, pero hubo un problema al enviar el archivo.";
+        }
+
+        mostrarAlerta(mensaje);
     }
-
 }
 
-function cerrarExportarExcelModal() {
-
-    document
-        .getElementById("exportarExcelModal")
-        .classList
-        .add("hidden");
-
-    /*
-     * Liberamos la referencia del archivo temporal.
-     * El navegador liberara la memoria cuando corresponda.
-     */
-    archivoExcelTemporal = null;
-
-}
 
 function escapeHTML(text) {
 
