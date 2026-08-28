@@ -119,11 +119,12 @@
     <button class="btn-success" onclick="exportarCSV()">
         Exportar
     </button>
-
-    <button class="btn-primary" onclick="compartirExcel()">
+    <button
+        id="btnCompartirExcel"
+        class="btn-primary"
+        onclick="prepararCompartirExcel()">
         Compartir
     </button>
-
     <button class="btn-danger" onclick="confirmarBorrarTodo()">
         Borrar
     </button>
@@ -251,6 +252,35 @@
       <button type="button" id="appDialogAccept" class="btn-success">Aceptar</button>
     </div>
   </div>
+</div>
+
+
+
+<div id="shareReadyModal" class="modal hidden">
+    <div class="modal-content">
+        <h2>Listo para compartir</h2>
+        <p class="modal-description">
+            El archivo se genero y se comprimio correctamente.
+        </p>
+        <div class="location-preview">
+            <strong>Archivo:</strong><br>
+            <span id="archivoCompartirNombre"></span>
+        </div>
+        <div class="modal-buttons">
+            <button
+                type="button"
+                class="btn-secondary"
+                onclick="cerrarCompartirPreparado()">
+                Cancelar
+            </button>
+            <button
+                type="button"
+                class="btn-success"
+                onclick="compartirArchivoPreparado()">
+                Compartir
+            </button>
+        </div>
+    </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>

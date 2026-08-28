@@ -331,254 +331,286 @@ function guardarDatos() {
 
 }
 
-async function crearExcelBuffer() {
-
-    const workbook =
-        new ExcelJS.Workbook();
-
-    const worksheet =
-        workbook.addWorksheet(
-            "Vehiculos"
-        );
-
-    worksheet.columns = [
-
-        {
-            header: "Numero de chasis",
-            key: "chasis",
-            width: 25
-        },
-
-        {
-            header: "Playa",
-            key: "playa",
-            width: 15
-        },
-
-        {
-            header: "Bloque",
-            key: "bloque",
-            width: 15
-        },
-
-        {
-            header: "Carril",
-            key: "calle",
-            width: 15
-        },
-
-        {
-            header: "Posicion",
-            key: "fila",
-            width: 15
-        },
-
-        {
-            header: "Ubicacion",
-            key: "ubicacion",
-            width: 18
-        }
-
-    ];
-
-    const encabezado =
-        worksheet.getRow(1);
-
-    encabezado.font = {
-
-        bold: true,
-
-        color: {
-            argb: "FFFFFFFF"
-        }
-
-    };
-
-    for (let c = 1; c <= 6; c++) {
-
-        encabezado.getCell(c).fill = {
-
-            type: "pattern",
-
-            pattern: "solid",
-
-            fgColor: {
-                argb: "70AD47"
-            }
-
-        };
-
-    }
-
-    encabezado.alignment = {
-
-        vertical: "middle",
-
-        horizontal: "center"
-
-    };
-
-    encabezado.height = 25;
-
-    for (
-        let i = 0;
-        i < vehiculos.length;
-        i++
-    ) {
-
-        const v =
-            vehiculos[i];
-
-        let calle = "";
-        let fila = "";
-        let ubicacion = "";
-
-        if (esPlayaEspecial(v.playa)) {
-
-            const p =
-                parsearPosicionEspecial(
-                    v.posicion
-                );
-
-            if (p) {
-
-                calle =
-                    String(p.calle);
-
-                fila =
-                    String(p.fila);
-
-                ubicacion =
-                    `${v.playa} - ${v.bloque} - ${p.calle} - ${p.fila}`;
-
-            } else {
-
-                ubicacion =
-                    `${v.playa} - ${v.bloque} - ${String(v.posicion)}`;
-
-            }
-
-        } else {
-
-            const p =
-                obtenerUbicacionNormal(
-                    v.posicion
-                );
-
-            if (p) {
-
-                calle =
-                    String(p.carril);
-
-                fila =
-                    String(p.posicion);
-
-                ubicacion =
-                    `${v.playa} - ${v.bloque} - ${p.carril}`;
-
-            } else {
-
-                ubicacion =
-                    `${v.playa} - ${v.bloque} - ${String(v.posicion)}`;
-
-            }
-
-        }
-
-        const filaExcel =
-            worksheet.addRow({
-
-                chasis:
-                    String(v.chasis),
-
-                playa:
-                    String(v.playa),
-
-                bloque:
-                    String(v.bloque),
-
-                calle:
-                    String(calle),
-
-                fila:
-                    String(fila),
-
-                ubicacion:
-                    ubicacion
-
-            });
-
-        for (
-            let c = 1;
-            c <= 6;
-            c++
-        ) {
-
-            filaExcel
-                .getCell(c)
-                .numFmt = "@";
-
-        }
-
-        filaExcel.height = 15;
-
-        filaExcel.alignment = {
-
-            vertical:
-                "middle",
-
-            horizontal:
-                "center"
-
-        };
-
-    }
-
-    worksheet.autoFilter = {
-
-        from:
-            "A1",
-
-        to:
-            "F" +
-            (vehiculos.length + 1)
-
-    };
-
-    worksheet.views = [
-
-        {
-
-            state:
-                "frozen",
-
-            ySplit:
-                1
-
-        }
-
-    ];
-
-    return await workbook.xlsx.writeBuffer();
-
-}
-
-async function exportarCSV() {
-
-    if (vehiculos.length === 0) {
-
-        mostrarAlerta(
-            "No hay vehiculos registrados para exportar."
-        );
-
-        return;
-
-    }
-
+async function generarExcelBlob() {
     try {
 
+        const workbook =
+            new ExcelJS.Workbook();
+
+        /*
+         * =========================================
+         * HOJA PRINCIPAL
+         * =========================================
+         */
+
+        const worksheet =
+            workbook.addWorksheet(
+                "Vehiculos"
+            );
+
+        /*
+         * =========================================
+         * COLUMNAS
+         * SIN CODIGO DE BARRAS
+         * =========================================
+         */
+
+        worksheet.columns = [
+
+            {
+                header: "Numero de chasis",
+                key: "chasis",
+                width: 25
+            },
+
+            {
+                header: "Playa",
+                key: "playa",
+                width: 15
+            },
+
+            {
+                header: "Bloque",
+                key: "bloque",
+                width: 15
+            },
+
+            {
+                header: "Carril",
+                key: "calle",
+                width: 15
+            },
+
+            {
+                header: "Posicion",
+                key: "fila",
+                width: 15
+            },
+
+            {
+                header: "Ubicacion",
+                key: "ubicacion",
+                width: 18
+            }
+
+        ];
+
+        /*
+         * =========================================
+         * ENCABEZADO
+         * =========================================
+         */
+
+        const encabezado =
+            worksheet.getRow(1);
+
+        encabezado.font = {
+
+            bold: true,
+
+            color: {
+                argb: "FFFFFFFF"
+            }
+
+        };
+
+        for (let c = 1; c <= 6; c++) {
+    encabezado.getCell(c).fill = {
+        type: "pattern",
+        pattern: "solid",
+        fgColor: {
+            argb: "70AD47"
+        }
+    };
+}
+
+        encabezado.alignment = {
+
+            vertical: "middle",
+
+            horizontal: "center"
+
+        };
+
+        encabezado.height = 25;
+
+
+        /*
+         * =========================================
+         * CREAR VEHICULOS
+         * =========================================
+         */
+
+        for (
+            let i = 0;
+            i < vehiculos.length;
+            i++
+        ) {
+
+            const v =
+                vehiculos[i];
+
+            let calle = "";
+            let fila = "";
+            let ubicacion = "";
+
+            if (esPlayaEspecial(v.playa)) {
+                const p = parsearPosicionEspecial(v.posicion);
+
+                if (p) {
+                    calle = String(p.calle);
+                    fila = String(p.fila);
+                    ubicacion = `${v.playa} - ${v.bloque} - ${p.calle} - ${p.fila}`;
+                } else {
+                    ubicacion = `${v.playa} - ${v.bloque} - ${String(v.posicion)}`;
+                }
+            } else {
+                const p = obtenerUbicacionNormal(v.posicion);
+
+                if (p) {
+                    calle = String(p.carril);
+                    fila = String(p.posicion);
+                    ubicacion = `${v.playa} - ${v.bloque} - ${p.carril}`;
+                } else {
+                    ubicacion = `${v.playa} - ${v.bloque} - ${String(v.posicion)}`;
+                }
+            }
+
+            /*
+             * =========================================
+             * DATOS
+             * =========================================
+             */
+
+            const chasis =
+                String(v.chasis);
+
+            const playa =
+                String(v.playa);
+
+            const bloque =
+                String(v.bloque);
+
+
+
+            /*
+             * =========================================
+             * AGREGAR FILA
+             * =========================================
+             */
+
+            const filaExcel =
+                worksheet.addRow({
+
+                    chasis:
+                        chasis,
+
+                    playa:
+                        playa,
+
+                    bloque:
+                        bloque,
+
+                    calle:
+                        String(calle),
+
+                    fila:
+                        String(fila),
+
+                    ubicacion:
+                        ubicacion
+
+                });
+
+
+            /*
+             * =========================================
+             * TODAS LAS CELDAS COMO TEXTO
+             * =========================================
+             */
+
+            for (
+                let c = 1;
+                c <= 6;
+                c++
+            ) {
+
+                filaExcel
+                    .getCell(c)
+                    .numFmt = "@";
+
+            }
+
+
+            /*
+             * =========================================
+             * ALINEACION
+             * =========================================
+             */
+
+            filaExcel.height = 15;
+
+            filaExcel.alignment = {
+
+                vertical:
+                    "middle",
+
+                horizontal:
+                    "center"
+
+            };
+
+        }
+
+
+        /*
+         * =========================================
+         * FILTROS
+         * =========================================
+         */
+
+        worksheet.autoFilter = {
+
+            from:
+                "A1",
+
+            to:
+                "F" +
+                (vehiculos.length + 1)
+
+        };
+
+
+        /*
+         * =========================================
+         * CONGELAR ENCABEZADO
+         * =========================================
+         */
+
+        worksheet.views = [
+
+            {
+
+                state:
+                    "frozen",
+
+                ySplit:
+                    1
+
+            }
+
+        ];
+
+
+        /*
+         * =========================================
+         * GENERAR ARCHIVO XLSX
+         * =========================================
+         */
+
         const buffer =
-            await crearExcelBuffer();
+            await workbook.xlsx.writeBuffer();
+
 
         const blob =
             new Blob(
@@ -590,40 +622,8 @@ async function exportarCSV() {
 
                 }
             );
+        return blob;
 
-        const url =
-            URL.createObjectURL(
-                blob
-            );
-
-        const enlace =
-            document.createElement(
-                "a"
-            );
-
-        enlace.href =
-            url;
-
-        enlace.download =
-            "vehiculos_playa.xlsx";
-
-        document
-            .body
-            .appendChild(
-                enlace
-            );
-
-        enlace.click();
-
-        document
-            .body
-            .removeChild(
-                enlace
-            );
-
-        URL.revokeObjectURL(
-            url
-        );
 
     } catch (error) {
 
@@ -640,7 +640,64 @@ async function exportarCSV() {
 
 }
 
-async function compartirExcel() {
+
+let archivoCompartirPendiente = null;
+
+async function exportarCSV() {
+
+    if (vehiculos.length === 0) {
+
+        mostrarAlerta(
+            "No hay vehiculos registrados para exportar."
+        );
+
+        return;
+
+    }
+
+    const blob = await generarExcelBlob();
+
+    if (!blob) {
+        return;
+    }
+
+    const url =
+        URL.createObjectURL(
+            blob
+        );
+
+    const enlace =
+        document.createElement(
+            "a"
+        );
+
+    enlace.href = url;
+    enlace.download = "vehiculos_playa.xlsx";
+
+    document
+        .body
+        .appendChild(
+            enlace
+        );
+
+    enlace.click();
+
+    document
+        .body
+        .removeChild(
+            enlace
+        );
+
+    setTimeout(
+        function() {
+            URL.revokeObjectURL(url);
+        },
+        1000
+    );
+
+}
+
+async function prepararCompartirExcel() {
 
     if (vehiculos.length === 0) {
 
@@ -652,61 +709,159 @@ async function compartirExcel() {
 
     }
 
+    const boton =
+        document.getElementById(
+            "btnCompartirExcel"
+        );
+
+    const textoOriginal =
+        boton
+            ? boton.textContent
+            : "";
+
+    if (boton) {
+
+        boton.disabled = true;
+
+        boton.textContent =
+            "Preparando...";
+
+    }
+
     try {
 
-        if (!navigator.share) {
+        const excelBlob =
+            await generarExcelBlob();
+
+        if (!excelBlob) {
+            return;
+        }
+
+        if (typeof JSZip === "undefined") {
 
             mostrarAlerta(
-                "Este navegador no dispone de la funcion nativa de compartir."
+                "No se pudo cargar la herramienta de compresion."
             );
 
             return;
 
         }
 
-        const buffer =
-            await crearExcelBuffer();
-
         const zip =
             new JSZip();
 
         zip.file(
             "vehiculos_playa.xlsx",
-            buffer
+            excelBlob
         );
 
         const zipBlob =
             await zip.generateAsync(
                 {
-                    type:
-                        "blob",
-                    compression:
-                        "DEFLATE"
+                    type: "blob",
+                    compression: "DEFLATE"
                 }
             );
 
-        const archivo =
+        archivoCompartirPendiente =
             new File(
                 [zipBlob],
-                "vehiculos_playa.zip",
+                "vehiculos_playa.xlsx.zip",
                 {
                     type:
                         "application/zip"
                 }
             );
 
+        document
+            .getElementById(
+                "archivoCompartirNombre"
+            )
+            .textContent =
+            archivoCompartirPendiente.name;
+
+        document
+            .getElementById(
+                "shareReadyModal"
+            )
+            .classList
+            .remove("hidden");
+
+    } catch (error) {
+
+        console.error(
+            "Error al preparar archivo para compartir:",
+            error
+        );
+
+        mostrarAlerta(
+            "No se pudo preparar el archivo para compartir."
+        );
+
+    } finally {
+
+        if (boton) {
+
+            boton.disabled = false;
+
+            boton.textContent =
+                textoOriginal;
+
+        }
+
+    }
+
+}
+
+function cerrarCompartirPreparado() {
+
+    document
+        .getElementById(
+            "shareReadyModal"
+        )
+        .classList
+        .add("hidden");
+
+}
+
+async function compartirArchivoPreparado() {
+
+    if (!archivoCompartirPendiente) {
+
+        mostrarAlerta(
+            "No hay ningun archivo listo para compartir."
+        );
+
+        return;
+
+    }
+
+    if (!navigator.share) {
+
+        mostrarAlerta(
+            "Este navegador no dispone de la funcion nativa de compartir."
+        );
+
+        return;
+
+    }
+
+    try {
+
         if (
             navigator.canShare &&
             !navigator.canShare(
                 {
                     files:
-                        [archivo]
+                        [
+                            archivoCompartirPendiente
+                        ]
                 }
             )
         ) {
 
             mostrarAlerta(
-                "Este navegador no admite compartir este archivo ZIP."
+                "Este navegador no admite compartir este archivo."
             );
 
             return;
@@ -719,12 +874,19 @@ async function compartirExcel() {
                     "Vehiculos de playa",
 
                 text:
-                    "Archivo Excel comprimido.",
+                    "Archivo de vehiculos de playa",
 
                 files:
-                    [archivo]
+                    [
+                        archivoCompartirPendiente
+                    ]
             }
         );
+
+        cerrarCompartirPreparado();
+
+        archivoCompartirPendiente =
+            null;
 
     } catch (error) {
 
