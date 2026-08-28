@@ -413,7 +413,11 @@ button:disabled {
     color: #548235;
     margin-bottom: 4px;
 }
-
+/* Tamaño especial para la proxima posicion */
+#proximaPosicion {
+    font-size: clamp(18px, 4vw, 24px);
+    line-height: 1.15;
+}
 .summary-box span:last-child {
     font-size: 13px;
     color: #444;
