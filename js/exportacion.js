@@ -347,9 +347,9 @@ async function exportarCSV() {
     const archivo =
         new File(
             [contenido],
-            "prueba_compartir.txt",
+            "prueba_compartir.xml",
             {
-                type: "text/plain"
+                type: "application/xml"
             }
         );
 
