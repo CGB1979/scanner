@@ -352,6 +352,10 @@ button:disabled {
     padding: 15px;
     margin-top: 15px;
 }
+.btn-rebotador {
+    background: #4aaed6;
+    color: white;
+}
 
 .current-location {
     display: flex;
