@@ -20,9 +20,24 @@ function actualizarPantalla() {
         registros.length;
 
     const siguiente = obtenerProximaPosicion(playa, bloque);
-    proximaPosicion.innerText = esPlayaEspecial(playa)
-        ? siguiente
-        : formatearUbicacionNormal(siguiente);
+
+    if (esPlayaEspecial(playa)) {
+
+        const p = parsearPosicionEspecial(siguiente);
+
+        proximaPosicion.innerHTML = p
+            ? `Carril ${p.calle}<br><span class="next-position-line">Posicion ${p.fila}</span>`
+            : String(siguiente);
+
+    } else {
+
+        const u = obtenerUbicacionNormal(siguiente);
+
+        proximaPosicion.innerHTML = u
+            ? `Carril ${u.carril}<br><span class="next-position-line">Posicion ${u.posicion}</span>`
+            : String(siguiente);
+
+    }
 
     mostrarVehiculos();
     actualizarAyudaNumeracion();

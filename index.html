@@ -99,8 +99,14 @@
 <div class="current-location-info"><!-- EDITABLE: texto de etiqueta --> <span class="current-location-label">Ubicacion actual</span>  <!-- EDITABLE: texto que aparece como ubicacion inicial --> <span class="current-location-value" id="tituloUbicacion"> Playa A - Bloque A </span></div>
 <!-- EDITABLE: texto del boton --> <button class="btn-warning btn-change-location" onclick="abrirCambioUbicacionGeneral()" style="display: none;"> Cambiar ubicacion </button></div>
 <div class="summary">
-<div class="summary-box"><span class="number" id="cantidadVehiculos">0</span>  <!-- EDITABLE: texto --> <span>Vehiculos</span></div>
-<div class="summary-box"><span class="number" id="proximaPosicion">1</span>  <!-- EDITABLE: texto --> <span>Proxima posicion</span></div>
+<div class="summary-box">
+<span class="summary-label">Vehiculos</span>
+<span class="number" id="cantidadVehiculos">0</span>
+</div>
+<div class="summary-box summary-next-location">
+<span class="summary-label">Proxima ubicacion</span>
+<span class="number" id="proximaPosicion">Carril 1<br><span class="next-position-line">Posicion 1</span></span>
+</div>
 </div>
 </div>
 <div class="card"><!-- EDITABLE: titulo -->

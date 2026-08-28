@@ -401,8 +401,15 @@ button:disabled {
 .summary-box {
     background: #f1f8ed;
     border-radius: 10px;
-    padding: 15px 10px;
+    padding: 13px 10px;
     text-align: center;
+}
+
+.summary-label {
+    display: block;
+    font-size: 13px;
+    color: #444;
+    margin-bottom: 7px;
 }
 
 .summary-box .number {
@@ -411,16 +418,17 @@ button:disabled {
     line-height: 1.1;
     font-weight: bold;
     color: #548235;
-    margin-bottom: 4px;
 }
-/* Tamaño especial para la proxima posicion */
+
 #proximaPosicion {
     font-size: clamp(18px, 4vw, 24px);
-    line-height: 1.15;
+    line-height: 1.12;
+    white-space: nowrap;
 }
-.summary-box span:last-child {
-    font-size: 13px;
-    color: #444;
+
+#proximaPosicion .next-position-line {
+    font-size: 0.78em;
+    font-weight: 700;
 }
 
 .vehicle {
