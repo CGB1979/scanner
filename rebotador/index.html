@@ -1,273 +1,33 @@
 <!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Rebotador</title>
-<link rel="manifest" href="/scanner/rebotador/manifest.json">
-<meta name="theme-color" content="#5f9a3d">
-<link rel="stylesheet" href="css/estilos.css">
-</head>
-<body>
-<div id="app-shell">
-<div class="app-wrapper">
-<header class="app-header">
-<!-- EDITABLE: titulo principal -->
-<h1>Control de Playa</h1>
-<!-- EDITABLE: subtitulo principal -->
-<p>Gestion y asignacion de vehiculos</p>
-</header>
+<html lang="es"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Rebotador</title><link rel="manifest" href="manifest.json"><meta name="theme-color" content="#5f9a3d"><link rel="stylesheet" href="css/estilos.css">
+</head><body><div id="app-shell"><div class="app-wrapper">
+<header class="app-header"><h1>Rebotador</h1><p>Gestión de vehículos desde archivo Excel</p></header>
 <div class="container">
-<div class="card">
-<div class="section-title"><!-- EDITABLE: titulo de esta seccion -->
-<h2>Configuracion inicial</h2>
-</div>
-<!-- EDITABLE: explicacion debajo del titulo -->
-<p class="section-subtitle">Seleccione la ubicacion y como desea asignar los numeros antes de comenzar a escanear.</p>
-<div class="row">
-<div class="form-group"><!-- EDITABLE: nombre del selector --> <label for="playa">Playa</label>  <select id="playa">  <!-- EDITABLE: texto inicial del selector -->
-<option value="" selected=""></option>
-<option value="A">A</option>
-<option value="B">B</option>
-<option value="C">C</option>
-<option value="C1">C1</option>
-<option value="D">D</option>
-<option value="E">E</option>
-<option value="E1">E1</option>
-<option value="F">F</option>
-<option value="G">G</option>
-<option value="H">H</option>
-<option value="I">I</option>
-<option value="J">J</option>
-<option value="K">K</option>
-<option value="L">L</option>
-<option value="M">M</option>
-<option value="N">N</option>
-<option value="O">O</option>
-<option value="P">P</option>
-<option value="Q">Q</option>
-<option value="X">X</option>
-<option value="Y">Y</option>
-<option value="Z">Z</option>
-</select></div>
-<div class="form-group"><!-- EDITABLE: nombre del selector --> <label for="bloque">Bloque</label>  <select id="bloque">  <!-- EDITABLE: texto inicial del selector -->
-<option value="" selected=""></option>
-<option value="A">A</option>
-<option value="B">B</option>
-<option value="C">C</option>
-<option value="D">D</option>
-<option value="E">E</option>
-<option value="F">F</option>
-<option value="G">G</option>
-<option value="H">H</option>
-<option value="I">I</option>
-<option value="J">J</option>
-<option value="K">K</option>
-<option value="L">L</option>
-<option value="M">M</option>
-<option value="N">N</option>
-<option value="O">O</option>
-<option value="P">P</option>
-<option value="Q">Q</option>
-<option value="X">X</option>
-<option value="Y">Y</option>
-<option value="Z">Z</option>
-</select></div>
-</div>
-<div class="form-group"><!-- EDITABLE: nombre de esta opcion --> <label>Tipo de numeracion</label>
-<div class="numbering-options">
-<div class="numbering-option"><input type="radio" name="modoNumeracion" id="modoContinua" value="continua" />  <!-- EDITABLE: texto de la opcion --> <label for="modoContinua">Continua</label></div>
-<div class="numbering-option"><input type="radio" name="modoNumeracion" id="modoPares" value="pares" />  <!-- EDITABLE: texto de la opcion --> <label for="modoPares">Pares</label></div>
-<div class="numbering-option"><input type="radio" name="modoNumeracion" id="modoImpares" value="impares" />  <!-- EDITABLE: texto de la opcion --> <label for="modoImpares">Impares</label></div>
-</div>
-<!-- EDITABLE: texto de ayuda -->
-<div class="numbering-help" id="numberingHelp">Se asignara 1, 2, 3, 4...</div>
-<div class="start-number-container" id="numeroInicialContainer"><!-- EDITABLE: nombre del campo --> <label for="numeroInicial">Numero inicial</label>  <input type="number" id="numeroInicial" min="1" step="1" value="1" /></div>
-<div class="start-number-container hidden" id="filaInicialContainer"><!-- EDITABLE: nombre del campo --> <label for="filaInicial">Fila</label>  <select id="filaInicial">
-<option value="1">Fila 1</option>
-<option value="2">Fila 2</option>
-<option value="3">Fila 3</option>
-<option value="4">Fila 4</option>
-<option value="5">Fila 5</option>
-</select></div>
-</div>
-<!-- EDITABLE: texto del boton --> <button class="btn-primary big-button" onclick="abrirScanner()"> ESCANEAR VEHiCULO </button></div>
-<!-- BOTON REBOTADOR -->
-<button class="btn-rebotador big-button" onclick="abrirRebotador()"> REBOTADOR </button>
-<div class="card">
-<div class="current-location">
-<div class="current-location-info"><!-- EDITABLE: texto de etiqueta --> <span class="current-location-label">Ubicacion actual</span>  <!-- EDITABLE: texto que aparece como ubicacion inicial --> <span class="current-location-value" id="tituloUbicacion"> Playa A - Bloque A </span></div>
-<!-- EDITABLE: texto del boton --> <button class="btn-warning btn-change-location" onclick="abrirCambioUbicacionGeneral()" style="display: none;"> Cambiar ubicacion </button></div>
-<div class="summary">
-<div class="summary-box">
-<span class="summary-label">Vehiculos</span>
-<span class="number" id="cantidadVehiculos">0</span>
-</div>
-<div class="summary-box summary-next-location">
-<span class="summary-label">Proxima ubicacion</span>
-<span class="number" id="proximaPosicion">Carril 1<br><span class="next-position-line">Posicion 1</span></span>
-</div>
-</div>
-</div>
-<div class="card"><!-- EDITABLE: titulo -->
-<h3>Buscar vehiculo</h3>
-<!-- EDITABLE: texto de ayuda del campo --> <input type="text" id="buscarChasis" placeholder="Ingresar numero de chasis" oninput="buscarVehiculo()" />
-<div id="resultadoBusqueda">&nbsp;</div>
-</div>
-<div class="card vehicle-list-card">
-<h2>Vehiculos asignados</h2>
-<div class="vehicle-list-scroll">
-<div id="listaVehiculos">&nbsp;</div>
-</div>
-</div>
-<div class="fixed-bottom-actions">
-<div class="top-buttons"><!-- EDITABLE: texto del boton -->         <button class="btn-success" onclick="exportarCSV()">             Exportar Excel         </button>          <!-- EDITABLE: texto del boton -->         <button class="btn-danger" onclick="confirmarBorrarTodo()">             Borrar todo         </button></div>
-</div>
-</div>
-</div>
-</div>
-<div id="scannerModal" class="hidden">
-<div class="scanner-header"><!-- EDITABLE: titulo del escaner -->
-<h2>Escanear vehiculo</h2>
-<!-- EDITABLE: texto del boton --> <button class="btn-danger" onclick="cerrarScanner()">X</button></div>
-<div class="scanner-camera">
-<div id="reader">&nbsp;</div>
-<div class="scan-mask">
-<div class="mask-top">&nbsp;</div>
-<div class="mask-bottom">&nbsp;</div>
-<div class="mask-left">&nbsp;</div>
-<div class="mask-right">&nbsp;</div>
-</div>
-<div class="scan-frame">&nbsp;</div>
-<!-- EDITABLE: texto de ayuda del escaner -->
-<div class="scan-help">Coloque el codigo dentro del recuadro</div>
-</div>
-<div class="scanner-bottom">
-<div class="scanner-location">Playa <strong id="scannerPlaya">A</strong> - Bloque <strong id="scannerBloque">A</strong> <br />
-<!-- EDITABLE: texto --> Proxima posicion: <strong id="scannerPosicion">1</strong></div>
-<div id="scanResult" class="scan-result hidden">
-<h3 id="scanTitulo">&nbsp;</h3>
-<div id="scanInfo">&nbsp;</div>
-<div class="scan-buttons"><!-- EDITABLE: texto del boton --> <button id="btnCancelarScan" class="btn-secondary" onclick="cancelarResultadoScan()"> Cancelar </button>  <!-- EDITABLE: texto del boton --> <button id="btnAceptarScan" class="btn-success" onclick="aceptarScan()"> Aceptar y guardar </button></div>
-</div>
-<!-- =========================================
-     INGRESO MANUAL
-     ========================================= -->  <button id="btnIngresarManual" class="btn-success" onclick="abrirIngresoManual()">     Ingresar manualmente </button>   <!-- =========================================
-     SALIR DEL ESCANEO
-     ========================================= -->  <button id="btnSalirScanner" class="btn-danger" onclick="cerrarScanner()">     Salir de escaneo </button>   <!-- =========================================
-     MENSAJE DE ESTADO
-     ========================================= -->
-<div class="scanner-status" id="scannerStatus">Apunte la camara al codigo de barras</div>
-</div>
-</div>
-<!-- =========================================
-     MODAL INGRESO MANUAL
-     ========================================= -->
-<div id="manualCodeModal" class="modal hidden">
-<div class="modal-content">
-<h2>Ingresar codigo manualmente</h2>
-<p class="modal-description">Escriba el numero de chasis que figura en el codigo de barras.</p>
-<div class="form-group"><label for="manualCodeInput">                 Numero de chasis             </label>              <input type="text" id="manualCodeInput" autocomplete="off" inputmode="text" placeholder="Ingrese el numero de chasis" /></div>
-<div class="modal-buttons"><button type="button" class="btn-secondary" onclick="cerrarIngresoManual()">                 Cancelar             </button>              <button type="button" class="btn-success" onclick="confirmarIngresoManual()">                 Continuar             </button></div>
-</div>
-</div>
-<div id="locationModal" class="modal hidden">
-<div class="modal-content"><!-- EDITABLE: titulo -->
-<h2>Cambiar ubicacion</h2>
-<!-- EDITABLE: explicacion -->
-<p class="modal-description">Seleccione la nueva playa, bloque y ubicacion donde desea reubicar el vehiculo.</p>
-<div class="form-group"><!-- EDITABLE: etiqueta --> <label for="cambioPlaya">Playa</label>  <select id="cambioPlaya">
-<option value="A">A</option>
-<option value="B">B</option>
-<option value="C">C</option>
-<option value="C1">C1</option>
-<option value="D">D</option>
-<option value="E">E</option>
-<option value="E1">E1</option>
-<option value="F">F</option>
-<option value="G">G</option>
-<option value="H">H</option>
-<option value="I">I</option>
-<option value="J">J</option>
-<option value="P">P</option>
-</select></div>
-<div class="form-group"><!-- EDITABLE: etiqueta --> <label for="cambioBloque">Bloque</label>  <select id="cambioBloque">
-<option value="A">A</option>
-<option value="B">B</option>
-<option value="C">C</option>
-<option value="D">D</option>
-<option value="E">E</option>
-<option value="F">F</option>
-<option value="G">G</option>
-<option value="H">H</option>
-<option value="I">I</option>
-<option value="J">J</option>
-<option value="K">K</option>
-<option value="L">L</option>
-</select></div>
-<div class="form-group" id="cambioNumeroContainer"><!-- EDITABLE: etiqueta --> <label for="cambioNumero">Numero / ubicacion</label>  <input type="number" id="cambioNumero" min="1" step="1" />  <!-- EDITABLE: texto de ayuda -->
-<div class="position-hint" id="positionHint">Numero sugerido automaticamente.</div>
-</div>
-<div class="row hidden" id="cambioEspecialCarrilFilaContainer">
-<div class="form-group"><!-- EDITABLE: etiqueta --> <label for="cambioEspecialCarril">Carril</label>  <input type="number" id="cambioEspecialCarril" min="1" step="1" /></div>
-<div class="form-group"><!-- EDITABLE: etiqueta --> <label for="cambioEspecialPosicion">Posicion</label>  <select id="cambioEspecialPosicion">
-<option value="1">1</option>
-<option value="2">2</option>
-<option value="3">3</option>
-<option value="4">4</option>
-<option value="5">5</option>
-</select></div>
-</div>
-<!-- EDITABLE: texto de vista previa -->
-<div class="location-preview" id="locationPreview">Nueva ubicacion: \nPlaya A - Bloque A - Ubicacion 1</div>
-<div class="modal-buttons"><!-- EDITABLE: texto del boton --> <button class="btn-secondary" onclick="cerrarCambioUbicacion()"> Cancelar </button>  <!-- EDITABLE: texto del boton --> <button class="btn-primary" onclick="confirmarCambioUbicacion()"> Guardar cambio </button></div>
-</div>
-</div>
-<div id="confirmModal" class="modal hidden">
-<div class="modal-content"><!-- EDITABLE: titulo inicial -->
-<h2 id="confirmTitulo">Confirmar</h2>
-<div id="confirmMensaje">&nbsp;</div>
-<div class="modal-buttons"><!-- EDITABLE: texto del boton --> <button class="btn-secondary" onclick="cerrarConfirmacion()"> Cancelar </button>  <!-- EDITABLE: texto del boton --> <button id="confirmAceptar" class="btn-danger"> Confirmar </button></div>
-</div>
-</div>
+<div class="card"><div class="section-title"><h2>Cargar archivo</h2></div><p class="section-subtitle">Seleccione el archivo Excel sobre el que trabajará el Rebotador.</p>
+<div class="form-group"><label for="excelFile">Archivo Excel</label><input id="excelFile" type="file" accept=".xlsx,.xls,.xlsm,.csv"></div>
+<button class="btn-primary big-button" onclick="cargarExcel()">CARGAR ARCHIVO</button><div id="excelStatus" class="excel-status">No hay ningún archivo cargado.</div></div>
+<div class="card"><button class="btn-primary big-button" onclick="abrirScanner()">ESCANEAR VEHÍCULO</button></div>
+<div class="card"><div class="section-title"><h2>Filtrar vehículos</h2></div><p class="section-subtitle">Sin seleccionar Playa y Bloque se muestran todos los vehículos cargados.</p>
+<div class="row"><div class="form-group"><label for="playa">Playa</label><select id="playa"><option value="">Todas</option></select></div><div class="form-group"><label for="bloque">Bloque</label><select id="bloque"><option value="">Todos</option></select></div></div></div>
+<div class="card vehicle-list-card"><h2 id="listaTitulo">Vehículos cargados</h2><div class="vehicle-list-scroll"><div id="listaVehiculos"></div></div></div>
+<div class="fixed-bottom-actions"><div class="top-buttons"><button class="btn-success" onclick="exportarCSV()">Exportar Excel</button><button class="btn-danger" onclick="confirmarBorrarTodo()">Borrar todo</button></div></div>
+</div></div></div>
 
-<!-- MODAL REUTILIZABLE PARA MENSAJES Y PROMPTS -->
-<div id="appDialogModal" class="modal hidden">
-  <div class="modal-content">
-    <h2 id="appDialogTitle">Atención</h2>
-    <p id="appDialogMessage" class="modal-description"></p>
-    <div id="appDialogInputGroup" class="form-group hidden">
-      <label for="appDialogInput">Valor</label>
-      <input type="text" id="appDialogInput" autocomplete="off" />
-    </div>
-    <div class="modal-buttons">
-      <button type="button" id="appDialogCancel" class="btn-secondary hidden">Cancelar</button>
-      <button type="button" id="appDialogAccept" class="btn-success">Aceptar</button>
-    </div>
-  </div>
-</div>
+<div id="scannerModal" class="hidden"><div class="scanner-header"><h2>Escanear vehículo</h2><button class="btn-danger" onclick="cerrarScanner()">X</button></div>
+<div class="scanner-camera"><div id="reader"></div><div class="scan-frame"></div><div class="scan-help">Coloque el código dentro del recuadro</div></div>
+<div class="scanner-bottom"><div id="scanResult" class="scan-result hidden"><h3 id="scanTitulo"></h3><div id="scanInfo"></div><div id="scanButtons" class="scan-buttons"></div></div>
+<button id="btnIngresarManual" class="btn-success" onclick="abrirIngresoManual()">Ingresar manualmente</button><button id="btnSalirScanner" class="btn-danger" onclick="cerrarScanner()">Salir de escaneo</button><div class="scanner-status" id="scannerStatus">Apunte la cámara al código de barras</div></div></div>
 
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bwip-js@4.7.0/dist/bwip-js-min.js"></script>
-<script src="https://unpkg.com/html5-qrcode"></script>
-<script src="js/configuracion.js"></script>
-<script src="js/modal.js"></script>
-<script src="js/playasEspeciales.js"></script>
-<script src="js/numeracion.js"></script>
-<script src="js/vehiculos.js"></script>
-<script src="js/scanner.js"></script>
-<script src="js/ubicaciones.js"></script>
-<script src="js/exportacion.js"></script>
-<script src="js/version.js"></script>
-<script src="js/app.js"></script>
+<div id="manualCodeModal" class="modal hidden"><div class="modal-content"><h2>Ingresar código manualmente</h2><p class="modal-description">Ingrese el chasis completo o las últimas 4 a 6 letras/números.</p><div class="form-group"><label for="manualCodeInput">Código o parte final del chasis</label><input id="manualCodeInput" autocomplete="off"></div><div class="modal-buttons"><button class="btn-secondary" onclick="cerrarIngresoManual()">Cancelar</button><button class="btn-success" onclick="confirmarIngresoManual()">Continuar</button></div></div></div>
 
-<script>
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register(`/scanner/rebotador/service-worker.js?v=${APP_VERSION}`, { scope: '/scanner/rebotador/' });
-  });
-}
-</script>
-</body>
-</html>
+<div id="coincidenciasModal" class="modal hidden"><div class="modal-content"><h2>Coincidencias encontradas</h2><p class="modal-description">Seleccione el vehículo correcto.</p><div id="listaCoincidencias" class="coincidencias-list"></div><div class="modal-buttons"><button class="btn-secondary" onclick="cerrarCoincidencias()">Cancelar</button></div></div></div>
+
+<div id="locationModal" class="modal hidden"><div class="modal-content"><h2>Cambiar ubicación</h2><p id="cambioDescripcion" class="modal-description"></p><div class="row"><div class="form-group"><label for="cambioPlaya">Playa</label><input id="cambioPlaya"></div><div class="form-group"><label for="cambioBloque">Bloque</label><input id="cambioBloque"></div></div><div class="row"><div class="form-group"><label for="cambioCarril">Carril</label><input id="cambioCarril"></div><div class="form-group"><label for="cambioPosicion">Posición</label><input id="cambioPosicion"></div></div><div class="modal-buttons"><button class="btn-secondary" onclick="cerrarCambioUbicacion()">Cancelar</button><button class="btn-primary" onclick="confirmarCambioUbicacion()">Guardar cambio</button></div></div></div>
+
+<div id="confirmModal" class="modal hidden"><div class="modal-content"><h2 id="confirmTitulo">Confirmar</h2><div id="confirmMensaje"></div><div class="modal-buttons"><button class="btn-secondary" onclick="cerrarConfirmacion()">Cancelar</button><button id="confirmAceptar" class="btn-danger">Confirmar</button></div></div></div>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script src="https://unpkg.com/html5-qrcode"></script>
+<script src="js/configuracionExcel.js"></script><script src="js/configuracion.js"></script><script src="js/vehiculos.js"></script><script src="js/scanner.js"></script><script src="js/ubicaciones.js"></script><script src="js/exportacion.js"></script><script src="js/version.js"></script><script src="js/app.js"></script>
+<script>if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register(`./service-worker.js?v=${APP_VERSION}`,{scope:'./'}));}</script>
+</body></html>

@@ -1,5 +1,1 @@
-cargarConfiguracionNumeracion();
-
-actualizarOpcionesPlaya();
-
-actualizarPantalla();
+document.addEventListener('DOMContentLoaded',()=>actualizarPantalla());
