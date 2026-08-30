@@ -1,8 +1,35 @@
 function confirmarBorrarTodo() {
-  if (!vehiculos.length) return;
+  if (!datosExcel.workbook) return;
 
-  if (confirm("¿Borrar todos los vehículos cargados del listado? Esta acción solo afecta los datos cargados en Rebotador.")) {
+  const borrarTodo = confirm(
+    "¿Eliminar el Excel guardado y todos los datos de la sesión?\n\nAceptar = eliminar Excel y todos los datos.\nCancelar = ver la siguiente opción."
+  );
+
+  if (borrarTodo) {
     vehiculos = [];
+    datosExcel = {
+      nombre: "", hoja: "", encabezados: [], columnas: {}, workbook: null,
+      worksheet: null, filas: [], filaEncabezados: 1, filaDatosInicio: 2, totalInicial: 0
+    };
+    excelFileInput.value = "";
+    btnBuscarExcel.textContent = "Buscar Excel";
+    btnCargarExcel.disabled = true;
+    if (typeof eliminarSesionGuardada === "function") eliminarSesionGuardada();
+    actualizarPantalla();
+    actualizarEstadoExcel();
+    return;
+  }
+
+  if (!vehiculos.length) return;
+  if (confirm("¿Reiniciar solo las asignaciones y movimientos? El Excel seguirá cargado y la sesión se conservará.")) {
+    vehiculos.forEach(v => {
+      v.playa = "";
+      v.bloque = "";
+      v.carril = "";
+      v.posicion = "";
+      v.movidoDesde = "";
+      v.observaciones = "";
+    });
     actualizarPantalla();
     actualizarEstadoExcel();
   }

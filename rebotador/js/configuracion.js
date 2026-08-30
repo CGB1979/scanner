@@ -134,6 +134,7 @@ function actualizarEstadoExcel() {
   nombre.textContent = datosExcel.nombre || "No hay ningún archivo cargado.";
   cargados.textContent = String(datosExcel.totalInicial || 0);
   encontrados.textContent = String(vehiculos.length);
+  if (typeof programarGuardadoSesion === "function") programarGuardadoSesion();
 }
 
 function cargarExcel() {
@@ -202,6 +203,7 @@ function cargarExcel() {
       actualizarSelectores();
       actualizarPantalla();
       actualizarEstadoExcel();
+      if (typeof guardarSesionAhora === "function") guardarSesionAhora();
 
     } catch (err) {
       console.error(err);

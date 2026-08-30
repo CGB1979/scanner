@@ -1,4 +1,5 @@
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
+  await restaurarSesionGuardada();
   actualizarSelectores();
   actualizarPantalla();
   actualizarEstadoExcel();
@@ -6,7 +7,5 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 function volverAlEscanerNormal() {
-  // El Rebotador vive dentro de /scanner/rebotador/, por lo que ../
-  // vuelve al escáner principal.
   window.location.href = "../";
 }
