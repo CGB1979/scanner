@@ -122,6 +122,7 @@ excelFileInput.addEventListener("change", () => {
   }
 
   btnBuscarExcel.textContent = archivo.name;
+  btnBuscarExcel.classList.remove("excel-cargado");
   btnCargarExcel.disabled = false;
   requestAnimationFrame(ajustarBotonesExcel);
 });
@@ -197,6 +198,7 @@ function cargarExcel() {
       };
 
       btnBuscarExcel.textContent = "Cargado";
+      btnBuscarExcel.classList.add("excel-cargado");
       btnCargarExcel.disabled = true;
       requestAnimationFrame(ajustarBotonesExcel);
 
