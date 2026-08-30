@@ -11,6 +11,7 @@ const CONFIG_EXCEL = {
     bloque: { columna: null, encabezados: ["bloque"] },
     carril: { columna: null, encabezados: ["carril", "calle"] },
     posicion: { columna: null, encabezados: ["posicion", "posición", "ubicacion", "ubicación"] },
-    observaciones: { columna: null, encabezados: ["observaciones", "observacion", "observación", "obs"] }
+    observaciones: { columna: null, encabezados: ["observaciones", "observacion", "observación", "obs"] },
+    movidoDesde: { columna: null, encabezados: ["movido desde", "movido_desde", "origen movimiento", "origen"] }
   }
 };

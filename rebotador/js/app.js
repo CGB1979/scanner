@@ -1,1 +1,6 @@
-document.addEventListener('DOMContentLoaded',()=>actualizarPantalla());
+document.addEventListener("DOMContentLoaded", () => {
+  actualizarSelectores();
+  actualizarPantalla();
+  actualizarEstadoExcel();
+  ajustarBotonesExcel();
+});
