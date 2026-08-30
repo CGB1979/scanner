@@ -1018,6 +1018,10 @@ button:disabled {
     line-height: 1.1;
 }
 
+#btnBuscarExcel.excel-cargado {
+    background: #e8ad62 !important;
+}
+
 .excel-action-button:hover:not(:disabled) {
     background: #3699c1 !important;
 }
