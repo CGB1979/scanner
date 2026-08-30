@@ -51,7 +51,6 @@ async function abrirScanner() {
   } catch (e) {
     console.error(e);
     scannerActivo = false;
-    sonidoError();
     document.getElementById("scannerStatus").textContent =
       "No se pudo acceder a la cámara. Use el ingreso manual.";
   }
@@ -66,10 +65,8 @@ function procesarCodigo(codigo) {
   const exactos = vehiculos.filter(v => key(v.chasis) === key(c));
 
   if (exactos.length) {
-    sonidoExito();
     mostrarVehiculo(exactos[0]);
   } else {
-    sonidoError();
     mostrarNoEncontrado(c);
   }
 }
@@ -218,7 +215,6 @@ function confirmarIngresoManual() {
   );
 
   if (c.length < 4) {
-    sonidoError();
     alert("Ingrese al menos 4 caracteres.");
     return;
   }
@@ -231,7 +227,6 @@ function confirmarIngresoManual() {
 
   if (r.length === 1) {
     bloqueandoLectura = true;
-    sonidoExito();
     mostrarVehiculo(r[0]);
     return;
   }
@@ -243,7 +238,6 @@ function confirmarIngresoManual() {
   }
 
   bloqueandoLectura = true;
-  sonidoError();
   mostrarNoEncontrado(c);
 }
 

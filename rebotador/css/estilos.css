@@ -357,33 +357,6 @@ button:disabled {
     color: white;
 }
 
-.btn-rebotador-back {
-    background: #4aaed6;
-    color: white;
-    margin-top: 12px;
-}
-
-.btn-rebotador-back:hover {
-    background: #318fb7;
-}
-
-.location-preview.valid {
-    background: #edf8ef;
-    border-color: #b9dfbf;
-    color: #28763d;
-}
-
-.location-preview.invalid {
-    background: #fff2f2;
-    border-color: #efc1c1;
-    color: #b13b3b;
-}
-
-#btnGuardarCambioUbicacion:disabled {
-    opacity: .55;
-    cursor: not-allowed;
-}
-
 .current-location {
     display: flex;
     align-items: center;

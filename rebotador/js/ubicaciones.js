@@ -6,18 +6,29 @@ function opcionesBloquesCambio() {
   return BLOQUES_DISPONIBLES.slice();
 }
 
+function esIdNuevo(id) {
+  return String(id || "").startsWith("nuevo-");
+}
+
 function obtenerCarrilesExistentes(playa, bloque) {
   return [...new Set(
     vehiculos
       .filter(v =>
-        normalizar(v.playa) === normalizar(playa) &&
-        normalizar(v.bloque) === normalizar(bloque) &&
+        v.playa === playa &&
+        v.bloque === bloque &&
         normalizar(v.carril)
       )
       .map(v => normalizar(v.carril))
-  )]
-    .filter(v => Number.isFinite(Number(v)) && Number(v) >= 1)
-    .sort((a, b) => Number(a) - Number(b));
+  )].sort((a, b) => {
+    const na = Number(a);
+    const nb = Number(b);
+
+    if (Number.isFinite(na) && Number.isFinite(nb)) {
+      return na - nb;
+    }
+
+    return a.localeCompare(b, "es", { numeric: true });
+  });
 }
 
 function obtenerOpcionesPosicion(playa) {
@@ -29,43 +40,48 @@ function obtenerOpcionesPosicion(playa) {
 function ubicacionOcupada(playa, bloque, carril, posicion, excluirId = "") {
   return vehiculos.some(v =>
     v.id !== excluirId &&
-    normalizar(v.playa) === normalizar(playa) &&
-    normalizar(v.bloque) === normalizar(bloque) &&
+    v.playa === playa &&
+    v.bloque === bloque &&
     normalizar(v.carril) === normalizar(carril) &&
     key(v.posicion) === key(posicion)
   );
 }
 
 function posicionesLibres(playa, bloque, carril, excluirId = "") {
-  if (!playa || !bloque || !carril || Number(carril) < 1) return [];
-
   return obtenerOpcionesPosicion(playa).filter(posicion =>
     !ubicacionOcupada(playa, bloque, carril, posicion, excluirId)
   );
 }
 
-function obtenerPrimeraUbicacionDisponible(playa, bloque, excluirId = "") {
-  if (!playa || !bloque) return null;
-
-  const carriles = obtenerCarrilesExistentes(playa, bloque)
+function siguienteCarril(playa, bloque) {
+  const existentes = obtenerCarrilesExistentes(playa, bloque)
     .map(Number)
     .filter(Number.isFinite);
 
-  const mayor = carriles.length ? Math.max(...carriles) : 0;
-  const limite = Math.max(mayor + 1, 1);
-
-  for (let n = 1; n <= limite; n++) {
-    const libres = posicionesLibres(playa, bloque, String(n), excluirId);
-
-    if (libres.length) {
-      return {
-        carril: String(n),
-        posicion: libres[0]
-      };
-    }
+  if (!existentes.length) {
+    return esPlayaEspecial(playa) ? "1" : "1";
   }
 
-  return null;
+  const mayor = Math.max(...existentes);
+
+  return String(
+    esPlayaEspecial(playa)
+      ? mayor + 1
+      : (mayor % 2 === 0 ? mayor + 1 : mayor + 2)
+  );
+}
+
+function obtenerCarrilesCambio(playa, bloque, excluirId = "") {
+  const existentes = obtenerCarrilesExistentes(playa, bloque);
+  const conEspacio = existentes.filter(carril =>
+    posicionesLibres(playa, bloque, carril, excluirId).length > 0
+  );
+
+  const siguiente = siguienteCarril(playa, bloque);
+
+  const resultado = [...new Set([...conEspacio, siguiente])];
+
+  return resultado.sort((a, b) => Number(a) - Number(b));
 }
 
 function llenarSelect(id, valores, valorSeleccionado = "", textoInicial = "Seleccionar") {
@@ -95,40 +111,37 @@ function cargarBloquesCambio(valor = "") {
 }
 
 function cargarCarrilesCambio(playa, bloque, valor = "", excluirId = "") {
-  const input = document.getElementById("cambioCarril");
-  const lista = document.getElementById("cambioCarrilOpciones");
-  const existentes = obtenerCarrilesExistentes(playa, bloque);
-
-  lista.innerHTML = existentes
-    .map(carril => `<option value="${escapeHTML(carril)}"></option>`)
-    .join("");
-
-  const manual = normalizar(valor);
-
-  if (manual && Number(manual) >= 1) {
-    input.value = String(Number(manual));
-    return;
-  }
-
-  const primera = obtenerPrimeraUbicacionDisponible(playa, bloque, excluirId);
-  input.value = primera ? primera.carril : "";
+  llenarSelect(
+    "cambioCarril",
+    obtenerCarrilesCambio(playa, bloque, excluirId),
+    valor,
+    "Seleccionar carril"
+  );
 }
 
 function cargarPosicionesCambio(playa, bloque, carril, valor = "", excluirId = "") {
   const label = document.getElementById("labelCambioPosicion");
   const select = document.getElementById("cambioPosicion");
 
-  const esEspecial = esPlayaEspecial(playa);
-  label.textContent = esEspecial ? "Posición" : "Ubicación";
+  label.textContent = esPlayaEspecial(playa) ? "Posición" : "Ubicación";
 
   let libres = posicionesLibres(playa, bloque, carril, excluirId);
 
-  if (esEspecial) {
+  if (
+    valor &&
+    !libres.includes(valor) &&
+    vehiculoActual &&
+    vehiculoActual.id === excluirId
+  ) {
+    libres = [...libres, valor];
+  }
+
+  if (esPlayaEspecial(playa)) {
     libres.sort((a, b) => Number(a) - Number(b));
   }
 
   select.innerHTML =
-    `<option value="">Seleccionar ${esEspecial ? "posición" : "ubicación"}</option>` +
+    `<option value="">Seleccionar ${esPlayaEspecial(playa) ? "posición" : "ubicación"}</option>` +
     libres.map(posicion =>
       `<option value="${escapeHTML(posicion)}">${escapeHTML(posicion)}</option>`
     ).join("");
@@ -140,57 +153,6 @@ function cargarPosicionesCambio(playa, bloque, carril, valor = "", excluirId = "
   } else {
     select.value = "";
   }
-}
-
-function actualizarVistaUbicacion() {
-  const preview = document.getElementById("locationPreview");
-  const boton = document.getElementById("btnGuardarCambioUbicacion");
-
-  if (!vehiculoActual) {
-    preview.textContent = "";
-    boton.disabled = true;
-    return;
-  }
-
-  const playa = normalizar(document.getElementById("cambioPlaya").value);
-  const bloque = normalizar(document.getElementById("cambioBloque").value);
-  const carril = normalizar(document.getElementById("cambioCarril").value);
-  const posicion = normalizar(document.getElementById("cambioPosicion").value);
-
-  const etiqueta = esPlayaEspecial(playa) ? "Posición" : "Ubicación";
-
-  let valido =
-    !!playa &&
-    !!bloque &&
-    /^\d+$/.test(carril) &&
-    Number(carril) >= 1 &&
-    !!posicion &&
-    !ubicacionOcupada(playa, bloque, carril, posicion, vehiculoActual.id);
-
-  if (valido) {
-    preview.classList.remove("invalid");
-    preview.classList.add("valid");
-    preview.innerHTML =
-      `Disponible: Playa <strong>${escapeHTML(playa)}</strong> - ` +
-      `Bloque <strong>${escapeHTML(bloque)}</strong> - ` +
-      `Carril <strong>${escapeHTML(carril)}</strong> - ` +
-      `${etiqueta} <strong>${escapeHTML(posicion)}</strong>`;
-  } else {
-    preview.classList.remove("valid");
-    preview.classList.add("invalid");
-
-    if (!playa || !bloque) {
-      preview.textContent = "Seleccione Playa y Bloque.";
-    } else if (!/^\d+$/.test(carril) || Number(carril) < 1) {
-      preview.textContent = "Ingrese un Carril válido mayor o igual a 1.";
-    } else if (!posicion) {
-      preview.textContent = `No hay ${etiqueta.toLowerCase()} disponible para ese Carril.`;
-    } else {
-      preview.textContent = "La ubicación seleccionada no está disponible.";
-    }
-  }
-
-  boton.disabled = !valido;
 }
 
 function actualizarCambioDesdePlaya() {
@@ -210,8 +172,6 @@ function actualizarCambioDesdePlaya() {
     "",
     vehiculoActual.id
   );
-
-  actualizarVistaUbicacion();
 }
 
 function actualizarCambioDesdeBloque() {
@@ -223,7 +183,7 @@ function actualizarCambioDesdeCarril() {
 
   const playa = document.getElementById("cambioPlaya").value;
   const bloque = document.getElementById("cambioBloque").value;
-  const carril = normalizar(document.getElementById("cambioCarril").value);
+  const carril = document.getElementById("cambioCarril").value;
 
   cargarPosicionesCambio(
     playa,
@@ -232,12 +192,6 @@ function actualizarCambioDesdeCarril() {
     "",
     vehiculoActual.id
   );
-
-  actualizarVistaUbicacion();
-}
-
-function actualizarCambioDesdePosicion() {
-  actualizarVistaUbicacion();
 }
 
 function abrirCambioUbicacionVehiculo(id, obj) {
@@ -258,21 +212,28 @@ function abrirCambioUbicacionVehiculo(id, obj) {
       "Vehículo no registrado en el listado.";
   }
 
-  const playaInicial =
-    (PLAYAS_DISPONIBLES.includes(v.playa) && v.playa) ||
-    (PLAYAS_DISPONIBLES.includes(playaSelect.value) && playaSelect.value) ||
-    PLAYAS_DISPONIBLES[0];
-
-  const bloqueInicial =
-    (BLOQUES_DISPONIBLES.includes(v.bloque) && v.bloque) ||
-    (BLOQUES_DISPONIBLES.includes(bloqueSelect.value) && bloqueSelect.value) ||
-    BLOQUES_DISPONIBLES[0];
+  const playaInicial = v.playa || playaSelect.value || PLAYAS_DISPONIBLES[0];
+  const bloqueInicial = v.bloque || bloqueSelect.value || BLOQUES_DISPONIBLES[0];
 
   cargarPlayasCambio(playaInicial);
   cargarBloquesCambio(bloqueInicial);
 
-  // Al abrir el cambio se propone automáticamente la primera ubicación disponible.
-  actualizarCambioDesdePlaya();
+  cargarCarrilesCambio(
+    playaInicial,
+    bloqueInicial,
+    v.carril || "",
+    v.id
+  );
+
+  const carrilInicial = document.getElementById("cambioCarril").value;
+
+  cargarPosicionesCambio(
+    playaInicial,
+    bloqueInicial,
+    carrilInicial,
+    v.posicion || "",
+    v.id
+  );
 
   document.getElementById("scanResult").classList.add("hidden");
   document.getElementById("locationModal").classList.remove("hidden");
@@ -294,13 +255,13 @@ function confirmarCambioUbicacion() {
   const carril = normalizar(document.getElementById("cambioCarril").value);
   const posicion = normalizar(document.getElementById("cambioPosicion").value);
 
-  if (!playa || !bloque || !/^\d+$/.test(carril) || Number(carril) < 1 || !posicion) {
-    actualizarVistaUbicacion();
+  if (!playa || !bloque || !carril || !posicion) {
+    alert("Complete Playa, Bloque, Carril y Ubicación/Posición.");
     return;
   }
 
   if (ubicacionOcupada(playa, bloque, carril, posicion, vehiculoActual.id)) {
-    actualizarVistaUbicacion();
+    alert("La ubicación seleccionada ya está ocupada.");
     return;
   }
 
@@ -338,5 +299,4 @@ function confirmarCambioUbicacion() {
 
 document.getElementById("cambioPlaya").addEventListener("change", actualizarCambioDesdePlaya);
 document.getElementById("cambioBloque").addEventListener("change", actualizarCambioDesdeBloque);
-document.getElementById("cambioCarril").addEventListener("input", actualizarCambioDesdeCarril);
-document.getElementById("cambioPosicion").addEventListener("change", actualizarCambioDesdePosicion);
+document.getElementById("cambioCarril").addEventListener("change", actualizarCambioDesdeCarril);
