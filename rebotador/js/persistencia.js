@@ -105,6 +105,7 @@ async function restaurarSesionGuardada() {
 
     if (typeof btnBuscarExcel !== "undefined" && btnBuscarExcel) {
       btnBuscarExcel.textContent = "Cargado";
+      btnBuscarExcel.classList.add("excel-cargado");
     }
     if (typeof btnCargarExcel !== "undefined" && btnCargarExcel) {
       btnCargarExcel.disabled = true;
