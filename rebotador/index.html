@@ -36,7 +36,8 @@
       </section>
 
       <section class="card">
-        <button class="btn-primary big-button" type="button" onclick="abrirScanner()">ESCANEAR VEHÍCULO</button>
+        <button class="btn-primary big-button" type="button" onclick="abrirScanner()">REBOTAR VEHÍCULO</button>
+        <button class="btn-rebotador-back big-button" type="button" onclick="volverAlEscanerNormal()">VOLVER AL ESCÁNER NORMAL</button>
       </section>
 
       <section class="card">
@@ -73,7 +74,7 @@
 
 <div id="scannerModal" class="hidden">
   <div class="scanner-header">
-    <h2>Escanear vehículo</h2>
+    <h2>Rebotar vehículo</h2>
     <button class="btn-danger" type="button" onclick="cerrarScanner()">X</button>
   </div>
 
@@ -145,7 +146,8 @@
     <div class="row">
       <div class="form-group">
         <label for="cambioCarril">Carril</label>
-        <select id="cambioCarril"></select>
+        <input id="cambioCarril" list="cambioCarrilOpciones" type="number" min="1" step="1" inputmode="numeric" autocomplete="off">
+        <datalist id="cambioCarrilOpciones"></datalist>
       </div>
       <div class="form-group">
         <label id="labelCambioPosicion" for="cambioPosicion">Ubicación</label>
@@ -153,9 +155,11 @@
       </div>
     </div>
 
+    <div id="locationPreview" class="location-preview"></div>
+
     <div class="modal-buttons">
       <button class="btn-secondary" type="button" onclick="cerrarCambioUbicacion()">Cancelar</button>
-      <button class="btn-primary" type="button" onclick="confirmarCambioUbicacion()">Guardar cambio</button>
+      <button id="btnGuardarCambioUbicacion" class="btn-primary" type="button" onclick="confirmarCambioUbicacion()">Guardar cambio</button>
     </div>
   </div>
 </div>

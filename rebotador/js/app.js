@@ -4,3 +4,9 @@ document.addEventListener("DOMContentLoaded", () => {
   actualizarEstadoExcel();
   ajustarBotonesExcel();
 });
+
+function volverAlEscanerNormal() {
+  // El Rebotador vive dentro de /scanner/rebotador/, por lo que ../
+  // vuelve al escáner principal.
+  window.location.href = "../";
+}
