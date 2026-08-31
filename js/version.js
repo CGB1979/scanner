@@ -1,4 +1,4 @@
-const APP_VERSION = "1.0.13";
+const APP_VERSION = "1.0.13.1";
 
 document.addEventListener("DOMContentLoaded", () => {
     const versionElement = document.getElementById("versionBadge");
