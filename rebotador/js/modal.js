@@ -65,8 +65,8 @@
             el.title.textContent = opciones.title || "Atención";
             el.message.textContent = opciones.message || "";
             el.inputGroup.classList.toggle("hidden", opciones.type !== "prompt");
-            el.cancel.classList.toggle("hidden", opciones.type !== "prompt");
-            el.accept.parentElement.classList.toggle("app-dialog-one-button", opciones.type !== "prompt");
+            el.cancel.classList.toggle("hidden", opciones.type === "alert");
+            el.accept.parentElement.classList.toggle("app-dialog-one-button", opciones.type === "alert");
             el.accept.textContent = opciones.acceptText || (opciones.type === "prompt" ? "Continuar" : "Aceptar");
             el.input.value = opciones.defaultValue || "";
 
@@ -95,6 +95,36 @@
             title: titulo || "Atención",
             message: mensaje,
             acceptText: "Aceptar"
+        });
+    };
+
+    window.abrirObservaciones = function (vehiculo) {
+        if (!vehiculo) return;
+
+        const chasis = String(vehiculo.chasis || "").trim();
+        const valorActual = String(vehiculo.observaciones || "");
+
+        mostrarPrompt(
+            "Escriba la observación del vehículo." + (chasis ? `\n\nChasis: ${chasis}` : ""),
+            valorActual,
+            "Observaciones"
+        ).then(function (resultado) {
+            if (resultado === null) return;
+
+            vehiculo.observaciones = String(resultado || "").trim();
+
+            if (typeof guardarDatos === "function") guardarDatos();
+            if (typeof actualizarPantalla === "function") actualizarPantalla();
+            if (typeof actualizarEstadoExcel === "function") actualizarEstadoExcel();
+        });
+    };
+
+    window.mostrarConfirm = function (mensaje, titulo, textoAceptar) {
+        return abrirDialogo({
+            type: "confirm",
+            title: titulo || "Confirmar",
+            message: mensaje,
+            acceptText: textoAceptar || "Confirmar"
         });
     };
 

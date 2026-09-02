@@ -103,7 +103,7 @@ function buscarVehiculo() {
                         -
                         Bloque ${escapeHTML(v.bloque)}
                         -
-                        Ubicacion ${escapeHTML(v.posicion)}
+                        Posicion ${escapeHTML(v.posicion)}
 
                     `;
 
@@ -164,7 +164,7 @@ function eliminarVehiculo(chasis) {
         -
         Bloque ${escapeHTML(v.bloque)}
         -
-        Ubicacion ${escapeHTML(v.posicion)}
+        Posicion ${escapeHTML(v.posicion)}
 
     `;
 
@@ -300,6 +300,10 @@ function confirmarBorrarTodo() {
 
             vehiculos = [];
 
+            if (typeof reiniciarTodoProgresoNumeracion === "function") {
+                reiniciarTodoProgresoNumeracion();
+            }
+
             guardarDatos();
             cerrarConfirmacion();
             actualizarPantalla();
@@ -401,6 +405,12 @@ async function exportarCSV() {
                 header: "Ubicacion",
                 key: "ubicacion",
                 width: 18
+            },
+
+            {
+                header: "Observacion",
+                key: "observacion",
+                width: 35
             }
 
         ];
@@ -424,7 +434,7 @@ async function exportarCSV() {
 
         };
 
-        for (let c = 1; c <= 6; c++) {
+        for (let c = 1; c <= 7; c++) {
     encabezado.getCell(c).fill = {
         type: "pattern",
         pattern: "solid",
@@ -480,7 +490,7 @@ async function exportarCSV() {
                 if (p) {
                     calle = String(p.carril);
                     fila = String(p.posicion);
-                    ubicacion = `${v.playa} - ${v.bloque} - ${p.carril}`;
+                    ubicacion = `${v.playa} - ${v.bloque} - ${p.posicion}`;
                 } else {
                     ubicacion = `${v.playa} - ${v.bloque} - ${String(v.posicion)}`;
                 }
@@ -528,7 +538,10 @@ async function exportarCSV() {
                         String(fila),
 
                     ubicacion:
-                        ubicacion
+                        ubicacion,
+
+                    observacion:
+                        String(v.observaciones || "")
 
                 });
 
@@ -541,7 +554,7 @@ async function exportarCSV() {
 
             for (
                 let c = 1;
-                c <= 6;
+                c <= 7;
                 c++
             ) {
 
@@ -585,7 +598,7 @@ async function exportarCSV() {
                 "A1",
 
             to:
-                "F" +
+                "G" +
                 (vehiculos.length + 1)
 
         };
@@ -650,8 +663,12 @@ async function exportarCSV() {
             url;
 
 
-        enlace.download =
-            "vehiculos_playa.xlsx";
+        const fecha = new Date()
+    .toLocaleDateString("es-AR")
+    .replace(/\//g, "-");
+
+enlace.download =
+    `playa-${fecha}.xlsx`;
 
 
         document

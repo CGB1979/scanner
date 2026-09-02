@@ -1,5 +1,110 @@
 let vehiculos = [];
 
+// -----------------------------------------------------------------------------
+// DIAGNÓSTICO DE CARGA EXCEL
+// Se mantiene independiente de la lógica de importación. Registra el recorrido
+// completo desde "Buscar Excel" hasta FileReader/XLSX y permite copiar el log.
+// -----------------------------------------------------------------------------
+const EXCEL_DEBUG_KEY = "rebotador-excel-debug-log";
+const excelDebug = {
+  inicio: null,
+  lineas: []
+};
+
+function logExcelDebug(mensaje, datos = null) {
+  if (!excelDebug.inicio) excelDebug.inicio = new Date();
+  const tiempo = ((Date.now() - excelDebug.inicio.getTime()) / 1000).toFixed(3);
+  let linea = `[+${tiempo}s] ${mensaje}`;
+
+  if (datos !== null && datos !== undefined) {
+    try {
+      linea += " | " + JSON.stringify(datos);
+    } catch (_) {
+      linea += " | [datos no serializables]";
+    }
+  }
+
+  excelDebug.lineas.push(linea);
+  console.log("[EXCEL DEBUG]", linea);
+
+  try {
+    localStorage.setItem(EXCEL_DEBUG_KEY, excelDebug.lineas.join("\n"));
+  } catch (_) {}
+
+  actualizarBotonDiagnostico();
+}
+
+function iniciarLogExcelDebug(mensaje = "Inicio") {
+  excelDebug.inicio = new Date();
+  excelDebug.lineas = [];
+  logExcelDebug(mensaje);
+}
+
+function obtenerLogExcelDebug() {
+  return [
+    "=== DIAGNÓSTICO REBOTADOR / EXCEL ===",
+    "Fecha: " + (excelDebug.inicio ? excelDebug.inicio.toISOString() : new Date().toISOString()),
+    "URL: " + window.location.href,
+    "Navegador: " + navigator.userAgent,
+    "XLSX disponible: " + (typeof XLSX !== "undefined"),
+    "XLSX versión: " + (typeof XLSX !== "undefined" && XLSX.version ? XLSX.version : "desconocida"),
+    "",
+    ...excelDebug.lineas
+  ].join("\n");
+}
+
+async function copiarLogExcelDebug(mostrarMensaje = true) {
+  const texto = obtenerLogExcelDebug();
+  let copiado = false;
+
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(texto);
+      copiado = true;
+    }
+  } catch (_) {}
+
+  if (!copiado) {
+    try {
+      const area = document.createElement("textarea");
+      area.value = texto;
+      area.style.position = "fixed";
+      area.style.left = "-9999px";
+      area.style.top = "0";
+      document.body.appendChild(area);
+      area.focus();
+      area.select();
+      copiado = document.execCommand("copy");
+      area.remove();
+    } catch (_) {}
+  }
+
+  if (mostrarMensaje) {
+    mostrarAlerta(copiado
+      ? "El diagnóstico se copió al portapapeles. Pegalo en el chat."
+      : "No se pudo copiar automáticamente. Usá el botón 'Copiar diagnóstico'.");
+  }
+
+  return copiado;
+}
+
+function actualizarBotonDiagnostico() {
+  const boton = document.getElementById("btnCopiarDiagnostico");
+  if (!boton) return;
+  boton.disabled = excelDebug.lineas.length === 0;
+}
+
+function registrarErrorExcelDebug(etapa, err) {
+  const datos = {
+    etapa,
+    nombre: err && err.name ? err.name : "Error",
+    mensaje: err && err.message ? err.message : String(err),
+    stack: err && err.stack ? err.stack : ""
+  };
+  logExcelDebug("ERROR", datos);
+}
+
+
 let datosExcel = {
   nombre: "",
   hoja: "",
@@ -61,20 +166,88 @@ function columnaPorLetra(l) {
 
 function detectarColumnas(encabezados) {
   const r = {};
+  const headers = (encabezados || []).map(h => normalizar(h));
 
   for (const [campo, cfg] of Object.entries(CONFIG_EXCEL.campos)) {
     let idx = columnaPorLetra(cfg.columna);
+    const alternativas = (cfg.encabezados || []).map(key).filter(Boolean);
 
-    if (idx === null) {
-      idx = encabezados.findIndex(h =>
-        cfg.encabezados.map(key).includes(key(h))
-      );
+    // Si se indicó una letra de columna, se respeta como primera opción.
+    if (idx === null || idx >= headers.length) idx = -1;
+
+    if (idx < 0) {
+      // Primero intentamos coincidencia exacta.
+      idx = headers.findIndex(h => alternativas.includes(key(h)));
+    }
+
+    if (idx < 0) {
+      // Después permitimos encabezados más descriptivos.
+      idx = headers.findIndex(h => {
+        const kh = key(h);
+        if (!kh) return false;
+
+        if (campo === "chasis") {
+          return kh.includes("chasis");
+        }
+
+        return alternativas.some(a => a && kh.includes(a));
+      });
     }
 
     r[campo] = idx;
   }
 
   return r;
+}
+
+function pareceChasis(v) {
+  const s = normalizar(v).replace(/\s+/g, "");
+  // Los chasis/VIN suelen ser cadenas alfanuméricas largas. No exigimos
+  // exactamente 17 caracteres para no descartar archivos particulares.
+  return s.length >= 6 && /[a-z0-9]/i.test(s) && !/^(chasis|numero|nro|n|vin)$/i.test(s);
+}
+
+function detectarEstructuraExcel(rows) {
+  // La única condición obligatoria es que exista una fila de cabeceras
+  // con alguna celda cuyo texto contenga la palabra "chasis".
+  // No importa en qué fila esté ni cuántas columnas tenga la cabecera.
+  for (let i = 0; i < rows.length; i++) {
+    const candidatos = rows[i] || [];
+    const detectadas = detectarColumnas(candidatos);
+
+    if (Number.isInteger(detectadas.chasis) && detectadas.chasis >= 0) {
+      return {
+        filaEncabezados: i,
+        headers: candidatos.slice(),
+        cols: detectadas
+      };
+    }
+  }
+
+  return null;
+}
+
+function buscarEstructuraEnWorkbook(wb) {
+  // Recorremos todas las hojas. No asumimos que la hoja con los vehículos
+  // sea la primera ni que se llame "Planilla" o "Vehiculos".
+  for (const nombreHoja of wb.SheetNames) {
+    const ws = wb.Sheets[nombreHoja];
+    if (!ws) continue;
+
+    const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: "" });
+    const estructura = detectarEstructuraExcel(rows);
+
+    if (estructura) {
+      return {
+        nombreHoja,
+        ws,
+        rows,
+        estructura
+      };
+    }
+  }
+
+  return null;
 }
 
 function valorFila(row, idx) {
@@ -109,17 +282,34 @@ function ajustarBotonesExcel() {
 }
 
 function abrirSelectorExcel() {
+  iniciarLogExcelDebug("Se presionó 'Buscar Excel'");
+  logExcelDebug("Estado antes de abrir selector", {
+    archivoAnterior: excelFileInput.files && excelFileInput.files[0] ? excelFileInput.files[0].name : "ninguno",
+    vehiculosActuales: vehiculos.length
+  });
   excelFileInput.click();
 }
 
 excelFileInput.addEventListener("change", () => {
   const archivo = excelFileInput.files && excelFileInput.files[0];
 
+  logExcelDebug("Evento change del selector de archivos", {
+    hayArchivo: !!archivo
+  });
+
   if (!archivo) {
+    logExcelDebug("El selector se cerró sin seleccionar archivo");
     btnBuscarExcel.textContent = datosExcel.workbook ? "Cargado" : "Buscar Excel";
     btnCargarExcel.disabled = !archivo;
     return;
   }
+
+  logExcelDebug("Archivo seleccionado", {
+    nombre: archivo.name,
+    tipo: archivo.type || "(sin MIME)",
+    tamanoBytes: archivo.size,
+    ultimaModificacion: archivo.lastModified ? new Date(archivo.lastModified).toISOString() : "desconocida"
+  });
 
   btnBuscarExcel.textContent = archivo.name;
   btnBuscarExcel.classList.remove("excel-cargado");
@@ -138,36 +328,101 @@ function actualizarEstadoExcel() {
   if (typeof programarGuardadoSesion === "function") programarGuardadoSesion();
 }
 
-function cargarExcel() {
-  const f = excelFileInput.files[0];
+async function cargarExcel() {
+  logExcelDebug("Se presionó 'Cargar Excel'");
+
+  const f = excelFileInput.files && excelFileInput.files[0];
 
   if (!f) {
-    alert("Seleccione un archivo Excel.");
+    logExcelDebug("No hay archivo seleccionado al presionar Cargar");
+    await mostrarAlerta("Seleccione un archivo Excel.");
     return;
   }
 
+  logExcelDebug("Preparando FileReader", {
+    nombre: f.name,
+    tipo: f.type || "(sin MIME)",
+    tamanoBytes: f.size
+  });
+
   const reader = new FileReader();
 
-  reader.onload = e => {
+  reader.onloadstart = () => logExcelDebug("FileReader: onloadstart");
+  reader.onprogress = e => logExcelDebug("FileReader: onprogress", {
+    cargados: e.loaded,
+    total: e.lengthComputable ? e.total : "desconocido"
+  });
+  reader.onerror = () => {
+    const err = reader.error || new Error("FileReader.error sin detalle");
+    registrarErrorExcelDebug("FileReader", err);
+    copiarLogExcelDebug(true);
+    mostrarAlerta("No se pudo leer el archivo desde el navegador. El diagnóstico fue copiado al portapapeles.");
+  };
+  reader.onabort = () => {
+    logExcelDebug("FileReader: onabort");
+    copiarLogExcelDebug(true);
+  };
+  reader.onloadend = () => logExcelDebug("FileReader: onloadend");
+
+  reader.onload = async e => {
+    logExcelDebug("FileReader: onload", {
+      resultadoTipo: e.target && e.target.result ? Object.prototype.toString.call(e.target.result) : "sin resultado",
+      bytes: e.target && e.target.result ? e.target.result.byteLength : 0
+    });
+
     try {
+      if (!e.target.result) {
+        throw new Error("FileReader terminó sin devolver datos.");
+      }
+
+      logExcelDebug("Iniciando XLSX.read");
       const wb = XLSX.read(e.target.result, { type: "array" });
-      const nombreHoja = wb.SheetNames[CONFIG_EXCEL.hoja] || wb.SheetNames[0];
-      const ws = wb.Sheets[nombreHoja];
-      const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: "" });
+      logExcelDebug("XLSX.read completado", {
+        hojas: wb.SheetNames,
+        cantidadHojas: wb.SheetNames.length
+      });
 
-      const filaDatosInicio = Math.max(
-        1,
-        Number(CONFIG_EXCEL.filaInicial) || 2
-      );
+      for (const nombre of wb.SheetNames) {
+        const hoja = wb.Sheets[nombre];
+        logExcelDebug("Inspeccionando hoja", {
+          nombre,
+          ref: hoja && hoja["!ref"] ? hoja["!ref"] : "sin !ref"
+        });
+      }
 
-      const filaEncabezados = filaDatosInicio - 1;
-      const headers = rows[filaEncabezados - 1] || [];
-      const cols = detectarColumnas(headers);
+      logExcelDebug("Buscando cabecera que contenga CHASIS en todas las hojas");
+      const encontrada = buscarEstructuraEnWorkbook(wb);
 
-      if (cols.chasis < 0 || cols.chasis === undefined) {
-        alert("No se encontró la columna Chasis. Revise js/configuracionExcel.js");
+      if (!encontrada) {
+        logExcelDebug("No se encontró ninguna cabecera con CHASIS");
+        await copiarLogExcelDebug(false);
+        await mostrarAlerta("No se encontró una columna Chasis en el archivo Excel. El diagnóstico fue copiado al portapapeles.");
         return;
       }
+
+      const nombreHoja = encontrada.nombreHoja;
+      const ws = encontrada.ws;
+      const rows = encontrada.rows;
+      const estructura = encontrada.estructura;
+      const filaEncabezados = estructura.filaEncabezados;
+      const headers = estructura.headers;
+      const cols = estructura.cols;
+
+      logExcelDebug("Estructura encontrada", {
+        hoja: nombreHoja,
+        filaCabeceraExcel: filaEncabezados + 1,
+        cantidadColumnasCabecera: headers.length,
+        cabeceras: headers,
+        columnaChasisIndice: cols.chasis,
+        columnaChasisExcel: cols.chasis >= 0 ? XLSX.utils.encode_col(cols.chasis) : "no encontrada",
+        filasTotales: rows.length
+      });
+
+      const filaDatosInicio = filaEncabezados + 2;
+      logExcelDebug("Comenzando importación de vehículos", {
+        filaDatosExcel: filaDatosInicio,
+        columnasDetectadas: cols
+      });
 
       vehiculos = rows
         .slice(filaDatosInicio - 1)
@@ -184,6 +439,18 @@ function cargarExcel() {
         }))
         .filter(v => v.chasis);
 
+      logExcelDebug("Filas procesadas", {
+        filasDatosConsideradas: Math.max(0, rows.length - (filaDatosInicio - 1)),
+        vehiculosConChasis: vehiculos.length
+      });
+
+      if (!vehiculos.length) {
+        logExcelDebug("ERROR: se encontró cabecera CHASIS pero no hay valores de chasis debajo de ella");
+        await copiarLogExcelDebug(false);
+        await mostrarAlerta("Se encontró la cabecera Chasis, pero no se encontraron vehículos debajo. El diagnóstico fue copiado al portapapeles.");
+        return;
+      }
+
       datosExcel = {
         nombre: f.name,
         hoja: nombreHoja,
@@ -197,6 +464,12 @@ function cargarExcel() {
         totalInicial: vehiculos.length
       };
 
+      logExcelDebug("Importación completada correctamente", {
+        archivo: f.name,
+        hoja: nombreHoja,
+        vehiculos: vehiculos.length
+      });
+
       btnBuscarExcel.textContent = "Cargado";
       btnBuscarExcel.classList.add("excel-cargado");
       btnCargarExcel.disabled = true;
@@ -205,24 +478,38 @@ function cargarExcel() {
       actualizarSelectores();
       actualizarPantalla();
       actualizarEstadoExcel();
-      if (typeof guardarSesionAhora === "function") guardarSesionAhora();
+      logExcelDebug("Pantalla y estado actualizados");
+
+      if (typeof guardarSesionAhora === "function") {
+        logExcelDebug("Guardando sesión persistente");
+        await guardarSesionAhora();
+        logExcelDebug("Sesión persistente guardada");
+      }
 
     } catch (err) {
-      console.error(err);
-      alert("No se pudo leer el archivo Excel.");
+      registrarErrorExcelDebug("Procesamiento XLSX/importación", err);
+      await copiarLogExcelDebug(false);
+      await mostrarAlerta("No se pudo leer el archivo Excel. El diagnóstico fue copiado al portapapeles. Pegalo en el chat.");
     }
   };
 
-  reader.readAsArrayBuffer(f);
+  try {
+    logExcelDebug("Llamando reader.readAsArrayBuffer");
+    reader.readAsArrayBuffer(f);
+  } catch (err) {
+    registrarErrorExcelDebug("reader.readAsArrayBuffer", err);
+    await copiarLogExcelDebug(false);
+    await mostrarAlerta("No se pudo iniciar la lectura del archivo. El diagnóstico fue copiado al portapapeles.");
+  }
 }
 
 function actualizarSelectores() {
   const playaAnterior = playaSelect.value;
   const bloqueAnterior = bloqueSelect.value;
 
-  const playas = PLAYAS_DISPONIBLES.slice();
+  const playas = obtenerPlayasFiltro();
 
-  const bloques = BLOQUES_DISPONIBLES.slice();
+  const bloques = obtenerBloquesFiltro();
 
   playaSelect.innerHTML =
     '<option value="">Todas</option>' +

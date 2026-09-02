@@ -307,13 +307,22 @@ reproducirSonidoNuevo();
             ubicacion.bloque
         );
 
+    if (posicion === null || posicion === undefined || posicion === "") {
+        reproducirSonidoError();
+        mostrarAlerta("No quedan posiciones disponibles para la configuracion actual.");
+        ultimoCodigo = null;
+        bloqueandoLectura = false;
+        return;
+    }
+
     resultadoPendiente = {
 
         tipo: "nuevo",
         chasis: chasis,
         playa: ubicacion.playa,
         bloque: ubicacion.bloque,
-        posicion: posicion
+        posicion: posicion,
+        observaciones: ""
 
     };
 
@@ -380,7 +389,7 @@ reproducirSonidoNuevo();
             <br>
 
             <strong>Posicion:</strong>
-            ${escapeHTML(obtenerUbicacionNormal(posicion).posicion)}
+            ${escapeHTML(posicion)}
 
         `;
 
@@ -411,7 +420,7 @@ reproducirSonidoNuevo();
     document
         .getElementById("btnAceptarScan")
         .innerText =
-        "Aceptar y guardar";
+        "Aceptar";
 
     document
         .getElementById("btnAceptarScan")
@@ -470,7 +479,7 @@ function mostrarVehiculoExistente(v) {
                 <br>
 
                 <strong>
-                    Ubicacion ${escapeHTML(v.posicion)}
+                    Posicion ${escapeHTML(v.posicion)}
                 </strong>
 
             `;
@@ -485,7 +494,7 @@ function mostrarVehiculoExistente(v) {
                 Bloque ${escapeHTML(v.bloque)}
                 -
                 <strong>
-                    Ubicacion ${escapeHTML(v.posicion)}
+                    Posicion ${escapeHTML(v.posicion)}
                 </strong>
 
             `;
@@ -561,7 +570,15 @@ function mostrarVehiculoExistente(v) {
 
 }
 
-function aceptarScan() {
+function abrirObservacionesResultadoScan() {
+    if (!resultadoPendiente) return;
+    const vehiculo = resultadoPendiente.tipo === "existente"
+        ? resultadoPendiente.vehiculo
+        : resultadoPendiente;
+    abrirObservaciones(vehiculo);
+}
+
+async function aceptarScan() {
 
     if (!resultadoPendiente) {
         return;
@@ -586,7 +603,7 @@ function aceptarScan() {
 
 }
 
-function guardarNuevoVehiculo() {
+async function guardarNuevoVehiculo() {
 
     const r = resultadoPendiente;
 
@@ -604,6 +621,9 @@ function guardarNuevoVehiculo() {
             esPlayaEspecial(r.playa)
                 ? String(r.posicion)
                 : Number(r.posicion),
+
+        observaciones:
+            String(r.observaciones || "").trim(),
 
         fecha:
             new Date().toISOString()
@@ -628,7 +648,7 @@ function guardarNuevoVehiculo() {
 
             reproducirSonidoError(); 
             // EDITABLE: mensaje de ubicacion ocupada
-            mostrarAlerta(
+            await mostrarAlerta(
                 `La ubicacion ${nuevo.posicion} ya esta ocupada.`
             );
 
@@ -639,9 +659,35 @@ function guardarNuevoVehiculo() {
 
         }
 
+    } else {
+
+        const posicionOcupada = vehiculos.some(function(v) {
+            return (
+                v.playa === nuevo.playa &&
+                v.bloque === nuevo.bloque &&
+                Number(v.posicion) === Number(nuevo.posicion)
+            );
+        });
+
+        if (posicionOcupada) {
+            reproducirSonidoError();
+            await mostrarAlerta(
+                `La posicion ${nuevo.posicion} ya esta ocupada en Playa ${nuevo.playa} - Bloque ${nuevo.bloque}.`
+            );
+            ultimoCodigo = null;
+            bloqueandoLectura = false;
+            return;
+        }
+
     }
 
     vehiculos.push(nuevo);
+
+    registrarPosicionAsignadaPorEscaner(
+        nuevo.playa,
+        nuevo.bloque,
+        nuevo.posicion
+    );
 
     guardarDatos();
     actualizarPantalla();

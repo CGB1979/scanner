@@ -4,9 +4,9 @@
   "description": "Scanner web para gestión y control de vehículos y ubicaciones.",
   "start_url": "./",
   "scope": "./",
-  "display": "standalone",
+  "display": "fullscreen",
   "background_color": "#ffffff",
-  "theme_color": "#5f9a3d",
+  "theme_color": "#ffffff",
   "orientation": "portrait",
   "icons": [
     {

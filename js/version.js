@@ -1,9 +1,1 @@
-const APP_VERSION = "1.0.13.2";
-
-document.addEventListener("DOMContentLoaded", () => {
-    const versionElement = document.getElementById("versionBadge");
-
-    if (versionElement) {
-        versionElement.textContent = `v${APP_VERSION}`;
-    }
-});
+window.APP_VERSION = "2.0";

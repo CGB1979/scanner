@@ -1,6 +1,6 @@
 async function abrirScanner() {
   if (!datosExcel.workbook) {
-    alert("Primero cargue un archivo Excel.");
+    await mostrarAlerta("Primero cargue un archivo Excel.");
     return;
   }
 
@@ -26,7 +26,11 @@ async function abrirScanner() {
       { facingMode: "environment" },
       {
         fps: 10,
-        qrbox: { width: 280, height: 130 },
+        qrbox: function(viewfinderWidth, viewfinderHeight) {
+          const width = Math.floor(viewfinderWidth * 0.92);
+          const height = Math.min(140, Math.floor(viewfinderHeight * 0.45));
+          return { width: width, height: height };
+        },
         formatsToSupport: [
           Html5QrcodeSupportedFormats.CODE_128,
           Html5QrcodeSupportedFormats.CODE_39,
@@ -92,6 +96,7 @@ function mostrarVehiculo(v) {
 
   document.getElementById("scanButtons").innerHTML = `
     <button class="btn-secondary" type="button" onclick="cancelarResultadoScan()">Cancelar</button>
+    <button class="btn-warning" type="button" onclick="abrirObservacionesResultadoScan()">Observaciones</button>
     <button class="btn-danger" type="button" onclick="borrarDesdeScan()">Borrar</button>
     <button class="btn-warning" type="button" onclick="cambiarDesdeScan()">Cambiar ubicación</button>
   `;
@@ -129,6 +134,7 @@ function mostrarNoEncontrado(codigo) {
 
   document.getElementById("scanButtons").innerHTML = `
     <button class="btn-secondary" type="button" onclick="cerrarScanner()">Salir</button>
+    <button class="btn-warning" type="button" onclick="abrirObservacionesResultadoScan()">Observaciones</button>
     <button class="btn-warning" type="button" onclick="cambiarDesdeScan()">Cambiar ubicación</button>
   `;
 
@@ -136,6 +142,11 @@ function mostrarNoEncontrado(codigo) {
   document.getElementById("btnIngresarManual").classList.add("hidden");
   document.getElementById("scannerStatus").textContent =
     "Vehículo no encontrado";
+}
+
+function abrirObservacionesResultadoScan() {
+  if (!vehiculoActual) return;
+  abrirObservaciones(vehiculoActual);
 }
 
 function continuarEscaneo(mensaje = "Apunte la cámara al código de barras") {
@@ -219,7 +230,7 @@ function confirmarIngresoManual() {
 
   if (c.length < 4) {
     sonidoError();
-    alert("Ingrese al menos 4 caracteres.");
+    mostrarAlerta("Ingrese al menos 4 caracteres.");
     return;
   }
 

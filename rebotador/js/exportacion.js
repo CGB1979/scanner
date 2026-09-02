@@ -1,8 +1,10 @@
-function confirmarBorrarTodo() {
+async function confirmarBorrarTodo() {
   if (!datosExcel.workbook) return;
 
-  const borrarTodo = confirm(
-    "¿Eliminar el Excel guardado y todos los datos de la sesión?\n\nAceptar = eliminar Excel y todos los datos.\nCancelar = ver la siguiente opción."
+  const borrarTodo = await mostrarConfirm(
+    "¿Eliminar el Excel guardado y todos los datos de la sesión?\n\nAceptar = eliminar Excel y todos los datos.\nCancelar = ver la siguiente opción.",
+    "Borrar todo",
+    "Eliminar"
   );
 
   if (borrarTodo) {
@@ -14,14 +16,14 @@ function confirmarBorrarTodo() {
     excelFileInput.value = "";
     btnBuscarExcel.textContent = "Buscar Excel";
     btnCargarExcel.disabled = true;
-    if (typeof eliminarSesionGuardada === "function") eliminarSesionGuardada();
+    if (typeof eliminarSesionGuardada === "function") await eliminarSesionGuardada();
     actualizarPantalla();
     actualizarEstadoExcel();
     return;
   }
 
   if (!vehiculos.length) return;
-  if (confirm("¿Reiniciar solo las asignaciones y movimientos? El Excel seguirá cargado y la sesión se conservará.")) {
+  if (await mostrarConfirm("¿Reiniciar solo las asignaciones y movimientos? El Excel seguirá cargado y la sesión se conservará.", "Reiniciar asignaciones", "Reiniciar")) {
     vehiculos.forEach(v => {
       v.playa = "";
       v.bloque = "";
@@ -82,7 +84,7 @@ function limpiarFila(fila, maxCol) {
 
 function exportarCSV() {
   if (!datosExcel.workbook || !datosExcel.worksheet) {
-    alert("No hay un archivo Excel cargado para exportar.");
+    mostrarAlerta("No hay un archivo Excel cargado para exportar.");
     return;
   }
 
@@ -144,13 +146,16 @@ function exportarCSV() {
     `A1:${colLetra(maxCol)}${maxFila}`;
 
   const nombreBase = (datosExcel.nombre || "rebotador")
-    .replace(/\.[^.]+$/, "");
+  .replace(/\.[^.]+$/, "");
 
-  XLSX.writeFile(
-    datosExcel.workbook,
-    `${nombreBase}-rebotador.xlsx`
-  );
-}
+const fecha = new Date()
+  .toLocaleDateString("es-AR")
+  .replace(/\//g, "-");
+
+XLSX.writeFile(
+  datosExcel.workbook,
+  `${nombreBase}-rebotador-${fecha}.xlsx`
+)
 
 function cerrarConfirmacion() {
   document.getElementById("confirmModal").classList.add("hidden");

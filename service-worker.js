@@ -4,6 +4,7 @@ const VERSION =
 const CACHE_NAME = `control-playa-${VERSION}`;
 
 const APP_ASSETS = [
+  // SCANNER PRINCIPAL
   './',
   './index.html',
   './css/estilos.css',
@@ -21,7 +22,28 @@ const APP_ASSETS = [
 
   './img/icon-192.png',
   './img/icon-512.png',
-  './manifest.json'
+  './manifest.json',
+
+  // REBOTADOR
+  './rebotador/',
+  './rebotador/index.html',
+  './css/estilos.rebotador.css',
+
+  './rebotador/js/app.js',
+  './rebotador/js/configuracion.js',
+  './rebotador/js/configuracionExcel.js',
+  './rebotador/js/exportacion.js',
+  './rebotador/js/modal.js',
+  './rebotador/js/numeracion.js',
+  './rebotador/js/persistencia.js',
+  './rebotador/js/playasEspeciales.js',
+  './rebotador/js/scanner.js',
+  './rebotador/js/sonidos.js',
+  './rebotador/js/ubicaciones.js',
+  './rebotador/js/vehiculos.js',
+
+  './rebotador/img/icon-192.png',
+  './rebotador/img/icon-512.png',
 ];
 
 self.addEventListener('install', event => {
@@ -75,6 +97,7 @@ self.addEventListener('fetch', event => {
       .catch(() => caches.match(event.request))
   );
 });
+
 self.addEventListener('message', event => {
   if (event.data && event.data.type === 'SKIP_WAITING') {
     self.skipWaiting();
