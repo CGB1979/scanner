@@ -979,16 +979,6 @@ function obtenerSiguienteNumeroNormal(
                 })
         );
 
-    // Si esta Playa + Bloque no tiene vehículos, el progreso anterior
-    // no debe seguir condicionando la próxima asignación.
-    if (posicionesOcupadas.size === 0) {
-        return normalizarNumeroParaDireccion(
-            inicio,
-            modo,
-            inversa
-        );
-    }
-
     while (
         candidato >= 1 &&
         posicionesOcupadas.has(candidato)
@@ -1043,17 +1033,7 @@ function obtenerSiguientePosicionEspecialDesdeProgreso(
     let calle;
     let fila;
 
-    if (!hayVehiculosEnUbicacion) {
-        calle = inicio;
-        fila =
-            modo === "porFila"
-                ? obtenerFilaInicial()
-                : (
-                    inversa
-                        ? 5
-                        : 1
-                );
-    } else if (
+    if (
         !estado ||
         estado.modo !== modo ||
         estado.inversa !== inversa ||

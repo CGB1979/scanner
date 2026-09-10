@@ -711,6 +711,58 @@ async function guardarNuevoVehiculo() {
 
 }
 
+function saltarPosicionScanner() {
+
+    // Solo se puede saltar una posicion cuando no hay un vehiculo
+    // pendiente de confirmar. De esta forma nunca se pierde una
+    // asignacion que ya fue detectada por el escaner.
+    if (resultadoPendiente) {
+        reproducirSonidoError();
+        document
+            .getElementById("scannerStatus")
+            .innerText =
+            "Primero acepte o cancele el vehiculo detectado.";
+        return;
+    }
+
+    const ubicacion = obtenerUbicacionSeleccionada();
+
+    const posicion = obtenerProximaPosicion(
+        ubicacion.playa,
+        ubicacion.bloque
+    );
+
+    if (posicion === null || posicion === undefined || posicion === "") {
+        reproducirSonidoError();
+        mostrarAlerta("No quedan posiciones disponibles para la configuracion actual.");
+        ultimoCodigo = null;
+        bloqueandoLectura = false;
+        return;
+    }
+
+    // Registrar la posicion como ultimo avance, aunque no se haya
+    // escaneado un vehiculo. Asi, la proxima lectura recibe la siguiente
+    // asignacion numerica segun el modo configurado (continua, par o impar).
+    registrarPosicionAsignadaPorEscaner(
+        ubicacion.playa,
+        ubicacion.bloque,
+        posicion
+    );
+
+    ultimoCodigo = null;
+    bloqueandoLectura = false;
+
+    actualizarPosicionScanner();
+
+    reproducirSonidoNuevo();
+
+    document
+        .getElementById("scannerStatus")
+        .innerText =
+        `Posicion ${posicion} salteada. Escanee el siguiente vehiculo.`;
+
+}
+
 function cancelarResultadoScan() {
 
     resultadoPendiente = null;
