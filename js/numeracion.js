@@ -71,6 +71,8 @@ function actualizarOpcionesPlaya() {
     numeroInicialContainer.classList.remove("hidden");
     filaInicialContainer.classList.add("hidden");
 
+    actualizarControlesPlaya();
+
 }
 
 function organizarControlesInicio(modoPorFila) {
@@ -107,46 +109,48 @@ function actualizarControlesPlaya() {
 
     const esJ = esPlayaEspecial(playaSelect.value);
     const modoActual = obtenerModoNumeracion();
+    const manual = typeof obtenerEscaneoManual === "function" && obtenerEscaneoManual() && modoActual === "continua";
+
+    // Primero sincronizamos la visibilidad del sector inferior. Esto evita
+    // que Fila quede accidentalmente junto al switch de Escaneo Manual.
+    if (typeof aplicarModoEscaneoManual === "function") {
+        aplicarModoEscaneoManual();
+    }
+
     const inversaControl = document.getElementById("asignarInversa");
 
     if (inversaControl) {
-
-        // En playas normales, Continua no admite asignacion inversa.
-        // Las playas especiales conservan su logica propia de inversion.
-        const habilitada = esJ || modoActual !== "continua";
-
+        // Asignar a la inversa solo se ofrece en Pares/Impares.
+        // Continua usa el mismo sector para Escaneo Manual.
+        const habilitada = modoActual !== "continua" && !manual;
         inversaControl.disabled = !habilitada;
 
         if (!habilitada && inversaControl.checked) {
             inversaControl.checked = false;
         }
+    }
 
+    // En modo manual no hay ninguna configuracion automatica adicional.
+    if (manual) {
+        if (typeof aplicarModoEscaneoManual === "function") {
+            aplicarModoEscaneoManual();
+        }
+        return;
     }
 
     if (!esJ) {
-
         organizarControlesInicio(false);
-
         numeroInicialContainer.classList.remove("hidden");
         filaInicialContainer.classList.add("hidden");
-
         numberingHelp.classList.remove("editable-j");
-
         return;
-
     }
 
     const modo = obtenerModoNumeracion();
 
-    // En playas especiales tambien debe mostrarse el numero inicial,
-    // igual que en las playas normales. Este valor indica el carril
-    // desde el que comienza la asignacion.
     organizarControlesInicio(modo === "porFila");
     numeroInicialContainer.classList.remove("hidden");
 
-    // En modo "Por fila" se muestra ademas la fila de inicio,
-    // ubicada junto al numero inicial para conservar la misma altura
-    // y armonia visual de la configuracion.
     if (modo === "porFila") {
         filaInicialContainer.classList.remove("hidden");
     } else {
@@ -230,7 +234,10 @@ function guardarConfiguracionNumeracion(reiniciarProgreso) {
             ? Number(numeroInicialBase)
             : inicio,
         filaInicio: fila,
-        inversa: inversa
+        inversa: inversa,
+        manual: typeof obtenerEscaneoManual === "function" && obtenerEscaneoManual() && modo === "continua",
+        manualCarril: typeof obtenerUbicacionManual === "function" ? obtenerUbicacionManual().carril : 1,
+        manualPosicion: typeof obtenerUbicacionManual === "function" ? obtenerUbicacionManual().posicion : 1
     };
 
     localStorage.setItem(
@@ -246,6 +253,9 @@ function guardarConfiguracionNumeracion(reiniciarProgreso) {
     }
 
     actualizarAyudaNumeracion();
+    if (typeof aplicarModoEscaneoManual === "function") {
+        aplicarModoEscaneoManual();
+    }
 
 }
 
@@ -271,6 +281,9 @@ function cargarConfiguracionNumeracion() {
     );
 
     let inversa = configuracionNumeracion.inversa === true;
+    const manualGuardado = configuracionNumeracion.manual === true;
+    const manualCarrilGuardado = parseInt(configuracionNumeracion.manualCarril, 10);
+    const manualPosicionGuardada = parseInt(configuracionNumeracion.manualPosicion, 10);
 
     if (
         modo !== "continua" &&
@@ -323,7 +336,10 @@ function cargarConfiguracionNumeracion() {
         inicio: inicio,
         inicioBase: numeroInicialBase,
         filaInicio: fila,
-        inversa: inversa
+        inversa: inversa,
+        manual: manualGuardado && modo === "continua",
+        manualCarril: Number.isFinite(manualCarrilGuardado) && manualCarrilGuardado >= 1 ? manualCarrilGuardado : 1,
+        manualPosicion: Number.isFinite(manualPosicionGuardada) && manualPosicionGuardada >= 1 ? manualPosicionGuardada : 1
     };
 
     let radio = document.querySelector(
@@ -357,6 +373,12 @@ function cargarConfiguracionNumeracion() {
     if (inversaControl) {
         inversaControl.checked = inversa;
     }
+
+    if (typeof escaneoManual !== "undefined" && escaneoManual) {
+        escaneoManual.checked = configuracionNumeracion.manual === true && modo === "continua";
+    }
+    if (typeof manualCarril !== "undefined" && manualCarril) manualCarril.value = configuracionNumeracion.manualCarril || 1;
+    if (typeof manualPosicion !== "undefined" && manualPosicion) manualPosicion.value = configuracionNumeracion.manualPosicion || 1;
 
     actualizarOpcionesPlaya();
     actualizarControlesPlaya();
@@ -600,6 +622,11 @@ filaInicial.addEventListener(
 
 function actualizarAyudaNumeracion() {
 
+    if (typeof obtenerEscaneoManual === "function" && obtenerEscaneoManual()) {
+        numberingHelp.innerText = "Escaneo manual: la ubicacion se define con Carril y Posicion antes de escanear.";
+        return;
+    }
+
     const modo =
         obtenerModoNumeracion();
 
@@ -695,6 +722,10 @@ function obtenerUbicacionSeleccionada() {
 }
 
 function obtenerAsignacionInversa() {
+
+    if (typeof obtenerEscaneoManual === "function" && obtenerEscaneoManual()) {
+        return false;
+    }
 
     const control =
         document.getElementById(
@@ -1021,14 +1052,6 @@ function obtenerSiguientePosicionEspecialDesdeProgreso(
         progresoNumeracion[
             clave
         ];
-
-    const hayVehiculosEnUbicacion = vehiculos.some(function(v) {
-        return (
-            v.playa === playa &&
-            v.bloque === bloque &&
-            parsearPosicionEspecial(v.posicion) !== null
-        );
-    });
 
     let calle;
     let fila;
@@ -1381,6 +1404,13 @@ function obtenerProximaPosicion(
     playa,
     bloque
 ) {
+
+    if (typeof obtenerEscaneoManual === "function" && obtenerEscaneoManual()) {
+        const manual = obtenerUbicacionManual();
+        return esPlayaEspecial(playa)
+            ? convertirPosicionEspecial(manual.carril, manual.posicion)
+            : manual.posicion;
+    }
 
     if (
         esPlayaEspecial(playa)

@@ -1090,30 +1090,20 @@ function confirmarIngresoManual() {
 
 function actualizarPosicionScanner() {
 
-    const playa =
-        playaSelect.value;
+    const playa = playaSelect.value;
+    const bloque = bloqueSelect.value;
+    const manual = typeof obtenerEscaneoManual === "function" && obtenerEscaneoManual();
 
-    const bloque =
-        bloqueSelect.value;
+    document.getElementById("scannerPlaya").innerText = playa;
+    document.getElementById("scannerBloque").innerText = bloque;
 
-    const posicion =
-        obtenerProximaPosicion(
-            playa,
-            bloque
-        );
+    if (manual) {
+        const ubicacion = obtenerUbicacionManual();
+        document.getElementById("scannerPosicion").innerText =
+            `Carril ${ubicacion.carril} - Posicion ${ubicacion.posicion}`;
+        return;
+    }
 
-    document
-        .getElementById("scannerPlaya")
-        .innerText =
-        playa;
-
-    document
-        .getElementById("scannerBloque")
-        .innerText =
-        bloque;
-
-    document
-        .getElementById("scannerPosicion")
-        .innerText =
-        posicion;
+    const posicion = obtenerProximaPosicion(playa, bloque);
+    document.getElementById("scannerPosicion").innerText = posicion;
 }
